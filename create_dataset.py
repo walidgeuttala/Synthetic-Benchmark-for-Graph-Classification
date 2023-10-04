@@ -5,6 +5,7 @@ import itertools
 import torch
 import pandas as pd 
 import subprocess
+import networkit as nk
 
 # Generates the parameters for the data generating function
 # The seed value is incremented each time so that we can get the same dataset next time we only set the seed parameter
@@ -33,7 +34,15 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
   min_m = 1
   max_m = 4 #2
 
-  #n umber of nodes x and y
+  # Graph HB parameters
+  # degree 
+  min_degree = 5
+  max_degree = 10
+
+  # Graph powerlaw_cluseter
+  proba = 1
+
+  # number of nodes x and y
   nodes_min = 12
   nodes_max = 35
   # Graph ER parameters
@@ -99,6 +108,30 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
     param['grid_tr_high'] = np.column_stack((x, y))
     idx += 1
 
+  
+  np.random.seed(seed)
+  x = np.array(np.random.randint(nodes_min, nodes_max, data_dist[idx]))
+  np.random.seed(seed)
+  seed += 1
+  y = np.array(np.random.randint(min_degree, max_degree, data_dist[idx]))
+  seed += 1
+  if networks == "all" or "HB" in networks:
+     param["HB"] = np.column_stack((x, y))
+     idx += 1
+  
+  np.random.seed(seed)
+  np.random.seed(saved_seed)
+  n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+  seed += 1
+
+  np.random.seed(seed)
+  m = np.array(np.random.randint(min_m, max_m, data_dist[idx]))
+  seed += 1
+
+  if networks == "all" or "PC" in networks:
+     param["PC"] = np.column_stack((n, m))
+     idx += 1
+
   # Reset the seed for random number generation
   np.random.seed(None)
 
@@ -148,10 +181,25 @@ def generate_data(param, data_dist, networks="all"):
         graphs.append(create_moore_2d_grid_graph(param['grid_tr_high'][i, 0], param['grid_tr_high'][i, 1], 2))
       idx += 1
     # Resetting the seed for numpy
+    if networks == "all" or "HB" in networks:
+      for i in range(data_dist[idx]):
+        graphs.append(hyperbolic_graph(int(param['HB'][i,0]), int(param['HB'][i,1])))
+      idx += 1
+
+    if networks == "all" or "PC" in networks:
+      for i in range(data_dist[idx]):  
+        graphs.append(nx.powerlaw_cluster_graph(int(param['PC'][i,0]), int(param['PC'][i,1]), 1, seed=i))
+      idx += 1
+
     np.random.seed(None)
 
     return graphs, torch.LongTensor([i for i, x in enumerate(data_dist) for _ in range(x)])
 
+
+def hyperbolic_graph(N,deg,gamma = 3.5):
+  G_Nk = nk.generators.HyperbolicGenerator(n = N,k = deg,gamma = 3.5).generate()
+  G = convertNkToNx(G_Nk)
+  return G
 
 def generate_combinations(choices):
     for combo in itertools.product(*[range(choice) for choice in choices]):
@@ -263,6 +311,18 @@ def add_summary(df):
     f.write('In the data folder, you will find several components that contain information about the dataset. These components are described below:\n\n1. dgl_graph.bin and info.pkl: These are the two main files that contain the structure of the graphs and additional information about the dataset. The dgl_graph.bin file contains the graph structure, and the info.pkl file contains the number of features and the number of classes for the data. To load these files, you can use the `load()` method from the GraphDataset class in the DGL library.\n\n2. info_about_graphs.csv and summary.txt: These files contain additional information about the graphs in the dataset, including the number of nodes, edges, degree, and density. Note that our graphs are undirected.\n\n3. Box plots: Lastly, you will find three box plots that provide a visual representation of the dataset. These plots can help you to better understand the distribution of the data and identify any potential outliers.\n\n4. parameters_generated_data.pth: This file contains a dictionary of parameters used to generate the data. You can load it using the torch.load() method.\n\nTo use this dataset, you can load the dgl_graph.bin and info.pkl files using the GraphDataset class in the DGL library. You can also refer to the info_about_graphs.csv and summary.txt files to get additional information about the graphs. Finally, you may find it helpful to review the box plots to gain a better understanding of the data distribution.')
 
     
+def get_nk_lcc_undirected(G):
+    G2 = max(nx.connected_component_subgraphs(G), key=len)
+    tdl_nodes = G2.nodes()
+    nodeListMap = dict(zip(tdl_nodes, range(len(tdl_nodes))))
+    G2 = nx.relabel_nodes(G2, nodeListMap, copy=True)
+    return G2, nodeListMap
 
+
+def convertNkToNx(G_nk):
+    G_nx = nx.Graph()
+    for i, j in G_nk.iterEdges():
+        G_nx.add_edge(i,j)
+    return G_nx
     
 
