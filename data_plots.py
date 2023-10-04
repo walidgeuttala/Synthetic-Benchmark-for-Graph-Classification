@@ -102,6 +102,37 @@ def transitivity_boxplot(df, transitivity, names, length, dataset_path):
     plt.savefig('{}/Boxplot for each column transitivity.png'.format(dataset_path))
     plt.show()
 
+def transitivity_by_density(df, transitivity, density, names, length, dataset_path):
+    plt.figure(figsize=(14, 10))
+
+    multi_index = df.iloc[:,4::df.shape[1]//length].columns
+    # Modify the second level by adding "_density"
+    multi_index = multi_index.set_levels([level + '_density' for level in multi_index.levels[1]], level=1)
+    tran_density = pd.DataFrame(np.where(df.iloc[:,3::df.shape[1]//length].values != 0, df.iloc[:,4::df.shape[1]//length].values / df.iloc[:,3::df.shape[1]//length].values, -1), columns = multi_index)
+
+    tran_density.boxplot()
+    n = 1
+    if transitivity == None:
+        n = 0
+    else:
+        n = len(transitivity)
+    # Add labels and title
+    plt.xlabel('Columns')
+    plt.ylabel('Values')
+    plt.title('Boxplot for each column')
+    color = ['blue', 'orange', 'red', 'green', 'purple', 'brown', 'pink']
+    for i in range(n):
+        for j in range(length):
+            if density[i] == 0:
+                plt.scatter(j+1, -1, color=color[i%len(color)],label=names[i])
+            else:
+                plt.scatter(j+1, transitivity[i]/density[i], color=color[i%len(color)],label=names[i])
+    
+    # Show the plot
+    plt.legend()
+    # Show the plot
+    plt.savefig('{}/Boxplot for each column transitivity_density.png'.format(dataset_path))
+    plt.show()
 
 def probability_of_rewiring(param, df, dataset_path):
     probability_of_rewiring = param['WS'][:, 2]
@@ -165,27 +196,28 @@ def num_nodes_boxplot(df, length, dataset_path):
 if __name__ == "__main__":
     args = parse_args()
     names2 = args.types.split(',')
-    args.draw_stanford_points = False
     names, density, transitivity = None, None, None
     if args.draw_stanford_points == True:
         names, density, transitivity = stanford_degree_dist_plots(False)
-    df = pd.read_csv('{}/info_about_graphs.csv'.format(args['dataset_path']), header=[0,1])
-    param = torch.load('{}/parameters_generated_data.pth'.format(args['dataset_path']))
+    df = pd.read_csv('{}/info_about_graphs.csv'.format(args.dataset_path), header=[0,1])
+    param = torch.load('{}/parameters_generated_data.pth'.format(args.dataset_path))
 
     for name in names2:
         if name == "degree_dist":
-            degree_dist(10, list(param.keys()), args['dataset_path'])
+            degree_dist(10, list(param.keys()), args.dataset_path)
         elif name == "density_boxplot":
-            density_boxplot(df, density, names, len(param.keys()), args['dataset_path'])
+            density_boxplot(df, density, names, len(param.keys()), args.dataset_path)
         elif name == "transitivity_boxplot":
-            transitivity_boxplot(df, transitivity, names, len(param.keys()), args['dataset_path'])
+            transitivity_boxplot(df, transitivity, names, len(param.keys()), args.dataset_path)
+        elif name == "transitivity_by_density":
+            transitivity_by_density(df, transitivity, density, names, len(param.keys()), args.dataset_path)
         elif name == "probability_of_rewiring":
-            probability_of_rewiring(param, df, args['dataset_path'])
+            probability_of_rewiring(param, df, args.dataset_path)
         elif name == "average_degree_boxplot":
-            average_degree_boxplot(df, len(param.keys()), args['dataset_path'])
+            average_degree_boxplot(df, len(param.keys()), args.dataset_path)
         elif name == "num_edge_boxplot":
-            num_edge_boxplot(df, len(param.keys()), args['dataset_path'])
+            num_edge_boxplot(df, len(param.keys()), args.dataset_path)
         elif name == "num_nodes_boxplot":
-            num_nodes_boxplot(df, len(param.keys()), args['dataset_path'])
+            num_nodes_boxplot(df, len(param.keys()), args.dataset_path)
         print()
 

@@ -9,10 +9,10 @@ import subprocess
 # Generates the parameters for the data generating function
 # The seed value is incremented each time so that we can get the same dataset next time we only set the seed parameter
 # and other seeds will be seed+=1
-def generate_parameters(data_dist = [250] * 5, seed=42):
+def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
   # Dictionary to save the parameters generated for our data generating function
   param = dict()
-
+  idx = 0
   # General parameters for the 4 graphs
   # Range of generated nodes
   min_n = 25
@@ -23,8 +23,8 @@ def generate_parameters(data_dist = [250] * 5, seed=42):
   max_p = 0.05
   # Graph WS parameters
   # Each node is joined with its k nearest neighbors in a ring topology
-  min_k = 2
-  max_k = 4
+  min_k = 4
+  max_k = 6
   # The probability of rewiring each edge
   min_w = 0.01
   max_w = 0.05
@@ -40,7 +40,7 @@ def generate_parameters(data_dist = [250] * 5, seed=42):
   np.random.seed(seed)
   # Generates an array of random integers between min_n and max_n with the size of data_dist[0]
   saved_seed = seed
-  n = np.array(np.random.randint(min_n, max_n, data_dist[0]))
+  n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
   seed += 1
   #Probability for edge creation.
   def my_random_function(x):
@@ -48,48 +48,56 @@ def generate_parameters(data_dist = [250] * 5, seed=42):
   
   p = np.vectorize(my_random_function)(n)
   # Store the parameters in a 2D numpy array
-  param['ER'] = np.column_stack((n, p))
+  if networks == "all" or "ER" in networks:
+    param['ER'] = np.column_stack((n, p))
+    idx += 1
 
   # Graph WS parameters
   np.random.seed(saved_seed)
-  # Generates an array of random integers between min_n and max_n with the size of data_dist[1]
-  n = np.array(np.random.randint(min_n, max_n, data_dist[1]))
+  # Generates an array of random integers between min_n and max_n with the size of data_dist[idx]
+  n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
   seed += 1
   np.random.seed(seed)
-  # Generates an array of random integers between min_k and max_k even with the size of data_dist[1]
-  k = np.array(np.random.randint(min_k, max_k+1, data_dist[1]))
+  # Generates an array of random integers between min_k and max_k even with the size of data_dist[idx]
+  k = np.array(np.random.randint(min_k, max_k+1, data_dist[idx]))
   k = np.floor_divide(k, 2) * 2
   seed += 1
   np.random.seed(seed)
-  # Generates an array of random floating point numbers between min_w and max_w with the size of data_dist[1]
-  p = np.random.uniform(min_w, max_w, data_dist[1])
+  # Generates an array of random floating point numbers between min_w and max_w with the size of data_dist[idx]
+  p = np.random.uniform(min_w, max_w, data_dist[idx])
   seed+=1
 
   # Store the parameters in a 2D numpy array
-  param['WS'] = np.column_stack((n, k, p))
-
+  if networks == "all" or "WS" in networks:
+    param['WS'] = np.column_stack((n, k, p))
+    idx += 1
   # graph BA parameters
   np.random.seed(saved_seed)
-  n = np.array(np.random.randint(min_n, max_n, data_dist[2]))
+  n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
   seed += 1
 
   np.random.seed(seed)
-  m = np.array(np.random.randint(min_m, max_m, data_dist[2]))
+  m = np.array(np.random.randint(min_m, max_m, data_dist[idx]))
   seed += 1
 
   # Store the parameters for the BA graph in a dictionary
-  param['BA'] = np.column_stack((n, m))
+  if networks == "all" or "BA" in networks:
+    param['BA'] = np.column_stack((n, m))
 
   # graph GRID parameters
   np.random.seed(saved_seed)
-  x = np.array(np.random.randint(nodes_min, nodes_max, data_dist[3]))
+  x = np.array(np.random.randint(nodes_min, nodes_max, data_dist[idx]))
   np.random.seed(seed)
   seed += 1
-  y = np.array(np.random.randint(nodes_min, nodes_max, data_dist[3]))
+  y = np.array(np.random.randint(nodes_min, nodes_max, data_dist[idx]))
   seed += 1
   # Store the parameters for the SC graph in a dictionary
-  param['grid_tr_low'] = np.column_stack((x, y))
-  param['grid_tr_high'] = np.column_stack((x, y))
+  if networks == "all" or "grid_low" in networks:
+    param['grid_tr_low'] = np.column_stack((x, y))
+    idx += 1
+  if networks == "all" or "grid_high" in networks:
+    param['grid_tr_high'] = np.column_stack((x, y))
+    idx += 1
 
   # Reset the seed for random number generation
   np.random.seed(None)
@@ -97,39 +105,48 @@ def generate_parameters(data_dist = [250] * 5, seed=42):
   # Return the graph parameters as a dictionary
   return param
 
-def generate_data(param, data_dist):
+def generate_data(param, data_dist, networks="all"):
     '''
     generate_data: This function generates data for 4 types of graphs given the parameters
 
     Parameters:
         - param: Dictionary that contains the parameters for each type of graph
         - data_dist: List that contains the count of each type of graph to generate
+        - networks: all, or choose the networks you want
     Returns:
         - graphs: List of generated graphs
         - classes: List of 0s, 1s, 2s, and 3s indicating the class of each graph
     '''
     graphs = []
     # ER Graphs
-    for i in range(data_dist[0]):
-        np.random.seed(i)
-        graphs.append(nx.gnp_random_graph(int(param['ER'][i, 0]), param['ER'][i, 1], seed=i, directed=False))
+    idx = 0
+    if networks == "all" or "ER" in networks:
+      for i in range(data_dist[idx]):
+          np.random.seed(i)
+          graphs.append(nx.gnp_random_graph(int(param['ER'][i, 0]), param['ER'][i, 1], seed=i, directed=False))
+      idx += 1
     np.random.seed(None)
     # WS Graphs
-    for i in range(data_dist[1]):
-        edges = int(param['WS'][i,0]*param['WS'][i,1])
-        graphs.append(nx.watts_strogatz_graph(int(param['WS'][i,0]), int(param['WS'][i,1]), param['WS'][i,2], seed=i))
-
+    if networks == "all" or "WS" in networks:
+      for i in range(data_dist[idx]):
+          edges = int(param['WS'][i,0]*param['WS'][i,1])
+          graphs.append(nx.watts_strogatz_graph(int(param['WS'][i,0]), int(param['WS'][i,1]), param['WS'][i,2], seed=i))
+      idx += 1
     # BA Graphs
-    for i in range(data_dist[2]):
-        graphs.append(nx.barabasi_albert_graph(int(param['BA'][i,0]), int(param['BA'][i,1]), seed=i, initial_graph=None))
-
+    if networks == "all" or "BA" in networks:
+      for i in range(data_dist[idx]):
+          graphs.append(nx.barabasi_albert_graph(int(param['BA'][i,0]), int(param['BA'][i,1]), seed=i, initial_graph=None))
+      idx += 1
     # 2D Grid using manhattan distance low transitivity
-    for i in range(data_dist[3]):
-      graphs.append(create_manhattan_2d_grid_graph(param['grid_tr_low'][i, 0], param['grid_tr_low'][i, 1], 1))
-
+    if networks == "all" or "grid_low" in networks:
+      for i in range(data_dist[idx]):
+        graphs.append(create_manhattan_2d_grid_graph(param['grid_tr_low'][i, 0], param['grid_tr_low'][i, 1], 1))
+      idx += 1
     # 2D Grid using moore distance high transitivity
-    for i in range(data_dist[4]):
-      graphs.append(create_moore_2d_grid_graph(param['grid_tr_high'][i, 0], param['grid_tr_high'][i, 1], 2))
+    if networks == "all" or "grid_high" in networks:
+      for i in range(data_dist[idx]):
+        graphs.append(create_moore_2d_grid_graph(param['grid_tr_high'][i, 0], param['grid_tr_high'][i, 1], 2))
+      idx += 1
     # Resetting the seed for numpy
     np.random.seed(None)
 
