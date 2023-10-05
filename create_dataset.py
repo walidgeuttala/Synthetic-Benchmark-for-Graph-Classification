@@ -113,7 +113,7 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
     np.random.seed(saved_seed)
     x = np.array(np.random.randint(nodes_min, nodes_max, data_dist[idx]))
     np.random.seed(saved_seed+1)
-    x = np.array(np.random.randint(nodes_min, nodes_max, data_dist[idx]))
+    y = np.array(np.random.randint(nodes_min, nodes_max, data_dist[idx]))
     np.random.seed(seed)
     seed += 1
     param['grid_tr_high'] = np.column_stack((x, y))
