@@ -1,7 +1,7 @@
 import json
 import os
 from copy import deepcopy
-
+import itertools
 from main import main, parse_args
 from utils import get_stats
 
@@ -39,27 +39,25 @@ def grid_search(config: dict):
     cnt = save_cnt = 0
     best_acc, err_bd = 0.0, 0.0
     best_args = vars(args)
-    for arch in config["arch"]:
-        args.architecture = arch
-        for hidden in config["hidden"]:
-            args.hid_dim = hidden
-            for pool_ratio in config["pool_ratio"]:
-                args.pool_ratio = pool_ratio
-                for conv_layers in config["conv_layers"]:
-                    args.conv_layers = conv_layers
-                    for lr in config["lr"]:
-                        args.lr = lr
-                        for weight_decay in config["weight_decay"]:
-                                args.weight_decay = weight_decay
-                            #for k in config["k"]:
-                                #args.k = k
-                                acc, bd = run_experiments(args)
-                                cnt += 1
-                                if acc > best_acc:
-                                    best_acc = acc
-                                    err_bd = bd
-                                    best_args = deepcopy(vars(args))
-                                    save_cnt = cnt
+    
+    keys = list(config.keys())
+    values = [config[key] for key in keys]
+    combinations = list(itertools.product(*values))
+    
+    for combination in combinations:
+        param_dict = dict(zip(keys, combination))
+        for key, value in param_dict.items():
+            setattr(args, key, value)
+            acc, bd = run_experiments(args)
+            cnt += 1
+            if acc > best_acc:
+                best_acc = acc
+                err_bd = bd
+                best_args = deepcopy(vars(args))
+                save_cnt = cnt
+
+
+                            
     args.output_path = "./output"
     if not os.path.exists(args.output_path):
         os.makedirs(args.output_path)
