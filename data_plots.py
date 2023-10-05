@@ -200,6 +200,7 @@ if __name__ == "__main__":
     args = parse_args()
     names2 = args.types.split(',')
     names, density, transitivity = None, None, None
+    args.draw_stanford_points = False
     if args.draw_stanford_points == True:
         names, density, transitivity = stanford_degree_dist_plots(False)
     df = pd.read_csv('{}/info_about_graphs.csv'.format(args.dataset_path), header=[0,1])
