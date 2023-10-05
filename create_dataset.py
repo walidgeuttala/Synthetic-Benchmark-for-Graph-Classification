@@ -44,8 +44,8 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
   proba = 1
 
   # number of nodes x and y
-  nodes_min = 12
-  nodes_max = 35
+  nodes_min = 10
+  nodes_max = 32
   # Graph ER parameters
   seed = np.int64(seed)
   np.random.seed(seed)
