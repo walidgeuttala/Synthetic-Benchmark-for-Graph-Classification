@@ -29,7 +29,7 @@ def parse_args():
         help="args json file for the model that we trained with",
     )
     parser.add_argument(
-        "--draw_stanford_points",
+        "--dist_draw",
         type=bool,
         default=False,
         help="dist draw for networks list",
@@ -195,7 +195,7 @@ if __name__ == "__main__":
     args2 = parse_args()
     param = torch.load('data/parameters_generated_data.pth')
 
-    if args2.draw_stanford_points == True:
+    if args2.dist_draw == True:
         stanford_degree_dist_plots()
     else:
         with open(args2.args_file, 'r') as f:
