@@ -6,6 +6,7 @@ import torch
 import pandas as pd 
 import subprocess
 import networkit as nk
+import random 
 
 # Generates the parameters for the data generating function
 # The seed value is incremented each time so that we can get the same dataset next time we only set the seed parameter
@@ -96,17 +97,17 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
 
   # graph GRID parameters
   np.random.seed(saved_seed)
-  x = np.array(np.random.randint(nodes_min, nodes_max, data_dist[idx]))
+  x = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+  x = np.array([find_random_close_a_b(n) for n in x])
   np.random.seed(seed)
-  seed += 1
-  y = np.array(np.random.randint(nodes_min, nodes_max, data_dist[idx]))
+  
   seed += 1
   # Store the parameters for the SC graph in a dictionary
   if networks == "all" or "grid_low" in networks:
-    param['grid_tr_low'] = np.column_stack((x, y))
+    param['grid_tr_low'] = np.column_stack((x[:0], x[:1]))
     idx += 1
   if networks == "all" or "grid_high" in networks:
-    param['grid_tr_high'] = np.column_stack((x, y))
+    param['grid_tr_high'] = np.column_stack((x[:0], x[:1]))
     idx += 1
 
   
@@ -196,6 +197,21 @@ def generate_data(param, data_dist, networks="all"):
 
     return graphs, torch.LongTensor([i for i, x in enumerate(data_dist) for _ in range(x)])
 
+
+def find_random_close_a_b(n):
+  combination = list()
+  for a in range(2, n+1):
+      if n%a == 0:
+         b = n/a
+         for x in range(a-10, a+11):
+            combination.append((x, b))
+
+  random_index = random.randint(0, len(combination) - 1)
+  random_number = random.randint(0, 1)
+  a, b = combination[random_index]
+  if random_number == 1:
+     a, b = b, a
+  return np.array([a, b])
 
 def hyperbolic_graph(N,deg,gamma = 3.5):
   G_Nk = nk.generators.HyperbolicGenerator(n = N,k = deg,gamma = 3.5).generate()
