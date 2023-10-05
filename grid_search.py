@@ -46,7 +46,7 @@ def grid_search(config: dict):
     values = [config[key] for key in keys]
     combinations = list(itertools.product(*values))
     config['dataset'] = config['dataset'][0]
-    print(combinations)
+    
     for combination in combinations:
         param_dict = dict(zip(keys, combination))
         for key, value in param_dict.items():
