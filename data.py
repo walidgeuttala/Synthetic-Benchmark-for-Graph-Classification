@@ -62,7 +62,7 @@ class GraphDataset(DGLDataset):
     def statistics(self):
         return self.dim_nfeats, self.gclasses, self.device
 
-    def save(self):
+    def save(self, data_path):
         '''
         Saves the processed data to disk as .bin and .pkl files. The processed data consists of the graph data and the corresponding labels.
         '''
@@ -71,22 +71,22 @@ class GraphDataset(DGLDataset):
             self.labels = self.labels.to("cpu")
 
         # Save graphs and labels to disk in a .bin file
-        graph_path = os.path.join('data/dgl_graph.bin')
+        graph_path = os.path.join('{}/dgl_graph.bin'.format(data_path))
         save_graphs(graph_path, self.graphs, {'labels':self.labels})
         # Save other information about the dataset in a .pkl file
-        info_path = os.path.join('data/info.pkl')
+        info_path = os.path.join('{}/info.pkl'.format(data_path))
         save_info(info_path, {'gclasses': self.gclasses, 'dim_nfeats': self.dim_nfeats, 'device': self.device})
 
-    def load(self):
+    def load(self, data_path):
         '''
         Loads the processed data from disk as .bin and .pkl files. The processed data consists of the graph data and the corresponding labels.
         '''
         # Load the graph data and labels from the .bin file
-        graph_path = os.path.join('data/dgl_graph.bin')
+        graph_path = os.path.join('{}/dgl_graph.bin'.format(data_path))
         self.graphs, label_dict = load_graphs(graph_path)
         self.labels = label_dict['labels']
         # Load the other information about the dataset from the .pkl file
-        info_path = os.path.join('data/info.pkl')
+        info_path = os.path.join('{}/info.pkl'.format(data_path))
         self.gclasses = load_info(info_path)['gclasses']
         self.dim_nfeats = load_info(info_path)['dim_nfeats']
         #self.device = load_info(info_path)['device']

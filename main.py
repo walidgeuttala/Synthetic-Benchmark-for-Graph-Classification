@@ -113,7 +113,7 @@ def main(args, seed, save=True):
     # Step 1: Prepare graph data and retrieve train/validation/test index ============================= #
 
     dataset = GraphDataset(device=args.device)
-    dataset.load()
+    dataset.load(args.dataset_path)
     if args.feat_type == 'ones_feat':
         dataset.add_ones_feat()
     elif args.feat_type == 'noise_feat':
