@@ -99,9 +99,9 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
   # Store the parameters for the grid_low graph in a dictionary
   if networks == "all" or "grid_low" in networks:
     np.random.seed(saved_seed)
-    x = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+    x = np.array(np.random.randint(nodes_min, nodes_max, data_dist[idx]))
     np.random.seed(saved_seed+1)
-    y = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+    y = np.array(np.random.randint(nodes_min, nodes_max, data_dist[idx]))
     np.random.seed(seed)
     seed += 1  
     param['grid_tr_low'] = np.column_stack((x, y))
@@ -111,9 +111,9 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
   # Store the parameters for the grid_high graph in a dictionary
   if networks == "all" or "grid_high" in networks:
     np.random.seed(saved_seed)
-    x = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+    x = np.array(np.random.randint(nodes_min, nodes_max, data_dist[idx]))
     np.random.seed(saved_seed+1)
-    x = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+    x = np.array(np.random.randint(nodes_min, nodes_max, data_dist[idx]))
     np.random.seed(seed)
     seed += 1
     param['grid_tr_high'] = np.column_stack((x, y))
