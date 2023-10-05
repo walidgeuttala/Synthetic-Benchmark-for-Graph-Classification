@@ -51,13 +51,13 @@ def grid_search(config: dict):
         param_dict = dict(zip(keys, combination))
         for key, value in param_dict.items():
             setattr(args, key, value)
-            acc, bd = run_experiments(args)
-            cnt += 1
-            if acc > best_acc:
-                best_acc = acc
-                err_bd = bd
-                best_args = deepcopy(vars(args))
-                save_cnt = cnt
+        acc, bd = run_experiments(args)
+        cnt += 1
+        if acc > best_acc:
+            best_acc = acc
+            err_bd = bd
+            best_args = deepcopy(vars(args))
+            save_cnt = cnt
 
 
                             
