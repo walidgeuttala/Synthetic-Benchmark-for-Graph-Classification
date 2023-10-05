@@ -125,7 +125,7 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
   # Store the parameters for the hyperbolic graph in a dictionary
   if networks == "all" or "HB" in networks:
     np.random.seed(saved_seed)
-    x = np.array(np.random.randint(nodes_min, nodes_max, data_dist[idx]))
+    x = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
     seed += 1
     np.random.seed(seed)
     y = np.array(np.random.randint(min_degree, max_degree, data_dist[idx]))
