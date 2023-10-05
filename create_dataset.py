@@ -46,6 +46,7 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
   nodes_min = 12
   nodes_max = 35
   # Graph ER parameters
+  seed = np.int64(seed)
   np.random.seed(seed)
   # Generates an array of random integers between min_n and max_n with the size of data_dist[0]
   saved_seed = seed
