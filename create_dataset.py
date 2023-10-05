@@ -98,21 +98,23 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
   # graph GRID parameters
   np.random.seed(saved_seed)
   x = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
-  x = np.array([find_random_close_a_b(n) for n in x])
+  np.random.seed(saved_seed+1)
+  y = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
   np.random.seed(seed)
   
   seed += 1
   # Store the parameters for the SC graph in a dictionary
   if networks == "all" or "grid_low" in networks:
-    param['grid_tr_low'] = np.column_stack((x[:, 0], x[:, 1]))
+    param['grid_tr_low'] = np.column_stack((x, y))
     idx += 1
   np.random.seed(saved_seed)
   x = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
-  x = np.array([find_random_close_a_b(n) for n in x])
+  np.random.seed(saved_seed+1)
+  x = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
   np.random.seed(seed)
   seed += 1
   if networks == "all" or "grid_high" in networks:
-    param['grid_tr_high'] = np.column_stack((x[:, 0], x[:, 1]))
+    param['grid_tr_high'] = np.column_stack((x, y))
     idx += 1
 
   
