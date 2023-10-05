@@ -217,8 +217,7 @@ def main(args, seed, save=True):
     )
     if save == True:
         torch.save(model.state_dict(), '{}/last_model_weights_trail{}_{}_{}.pth'.format(args.output_path, seed, args.dataset, args.feat_type))
-    if args.dataset != 'grid_dataset':
-        test_networks(model, vars(args))
+    
     return final_test_acc, sum(train_times) / len(train_times), [train_loss_list, train_acc_list, val_acc_list] 
 
 
