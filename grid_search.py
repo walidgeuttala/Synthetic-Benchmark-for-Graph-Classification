@@ -35,6 +35,7 @@ def run_experiments(args):
 def grid_search(config: dict):
     args = parse_args()
     args.dataset = config['dataset']
+    config['dataset'] = [config['dataset']]
     results = {}
     cnt = save_cnt = 0
     best_acc, err_bd = 0.0, 0.0
@@ -44,7 +45,7 @@ def grid_search(config: dict):
     keys = list(config.keys())
     values = [config[key] for key in keys]
     combinations = list(itertools.product(*values))
-    
+    config['dataset'] = config['dataset'][0]
     for combination in combinations:
         param_dict = dict(zip(keys, combination))
         for key, value in param_dict.items():
