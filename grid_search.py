@@ -39,7 +39,8 @@ def grid_search(config: dict):
     cnt = save_cnt = 0
     best_acc, err_bd = 0.0, 0.0
     best_args = vars(args)
-    
+    if args.feat_type != 'identity_feat':
+        config.pop('k')
     keys = list(config.keys())
     values = [config[key] for key in keys]
     combinations = list(itertools.product(*values))
