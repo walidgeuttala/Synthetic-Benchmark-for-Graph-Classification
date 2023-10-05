@@ -180,12 +180,12 @@ def generate_data(param, data_dist, networks="all"):
     # 2D Grid using manhattan distance low transitivity
     if networks == "all" or "grid_low" in networks:
       for i in range(data_dist[idx]):
-        graphs.append(create_manhattan_2d_grid_graph(param['grid_tr_low'][i, 0], param['grid_tr_low'][i, 1], 1))
+        graphs.append(create_manhattan_2d_grid_graph(int(param['grid_tr_low'][i, 0]), int(param['grid_tr_low'][i, 1], 1)))
       idx += 1
     # 2D Grid using moore distance high transitivity
     if networks == "all" or "grid_high" in networks:
       for i in range(data_dist[idx]):
-        graphs.append(create_moore_2d_grid_graph(param['grid_tr_high'][i, 0], param['grid_tr_high'][i, 1], 2))
+        graphs.append(create_moore_2d_grid_graph(int(param['grid_tr_high'][i, 0]), int(param['grid_tr_high'][i, 1], 2)))
       idx += 1
     # Resetting the seed for numpy
     if networks == "all" or "HB" in networks:
