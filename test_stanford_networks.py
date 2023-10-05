@@ -34,6 +34,12 @@ def parse_args():
         default=False,
         help="dist draw for networks list",
     )
+    parser.add_argument(
+        "--dataset_path",
+        type=str,
+        default='data',
+        help="dataset path",
+    )
     return parser.parse_args()
 
 def stanford_degree_dist_plots(draw = True):
@@ -193,7 +199,7 @@ def test_networks(model, args, param):
 if __name__ == "__main__":
     
     args2 = parse_args()
-    param = torch.load('data/parameters_generated_data.pth')
+    param = torch.load('{}/parameters_generated_data.pth'.format(args2.dataset_path))
 
     if args2.dist_draw == True:
         stanford_degree_dist_plots()
