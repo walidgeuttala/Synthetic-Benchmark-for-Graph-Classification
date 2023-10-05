@@ -106,6 +106,11 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
   if networks == "all" or "grid_low" in networks:
     param['grid_tr_low'] = np.column_stack((x[:0], x[:1]))
     idx += 1
+  np.random.seed(saved_seed)
+  x = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+  x = np.array([find_random_close_a_b(n) for n in x])
+  np.random.seed(seed)
+  seed += 1
   if networks == "all" or "grid_high" in networks:
     param['grid_tr_high'] = np.column_stack((x[:0], x[:1]))
     idx += 1
