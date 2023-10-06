@@ -204,4 +204,4 @@ def calculate_avg_shortest_path(graph):
     # Calculate the average of the upper half
     average_upper_half = sum_upper_half / count
 
-    return average_upper_half
+    return average_upper_half[0]
