@@ -245,7 +245,7 @@ if __name__ == "__main__":
         elif name == "num_edge_boxplot":
             num_edge_boxplot(df, len(param.keys()), args)
         elif name == "avg_shortest_path_boxplot":
-            avg_shortest_path_boxplot(df, avg_shortest_path, len(param.keys), args)
+            avg_shortest_path_boxplot(df, avg_shortest_path, len(param.keys()), args)
         elif name == "num_nodes_boxplot":
             num_nodes_boxplot(df, len(param.keys()), args)
         print()
