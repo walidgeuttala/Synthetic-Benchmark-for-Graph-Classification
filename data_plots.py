@@ -34,7 +34,7 @@ def parse_args():
 
 def degree_dist(pick, names , args):
     dataset = GraphDataset(device='cpu')
-    dataset.load()
+    dataset.load(args.dataset_path)
     data = []
     length = len(dataset) // len(names)
     for i in range(len(names)):
