@@ -328,7 +328,6 @@ def create_DF_transtivity_density(param, graphs, data_dist):
   for i, key in enumerate(param):
     avg_shortest_path = []
     for j in range(length):
-      print(calculate_avg_shortest_path(dgl.from_networkx(graphs[i*length+j])))
       avg_shortest_path.append(calculate_avg_shortest_path(dgl.from_networkx(graphs[i*length+j])))
     df.insert(i+i*5+5, column=(key, 'avg_shortest_path'), value=avg_shortest_path)  
 
