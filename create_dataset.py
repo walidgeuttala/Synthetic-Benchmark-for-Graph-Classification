@@ -7,6 +7,8 @@ import pandas as pd
 import subprocess
 import networkit as nk
 import random 
+from utils import calculate_avg_shortest_path
+import dgl
 
 # Generates the parameters for the data generating function
 # The seed value is incremented each time so that we can get the same dataset next time we only set the seed parameter
@@ -310,20 +312,24 @@ def create_DF_transtivity_density(param, graphs, data_dist):
   for i, key in enumerate(param):
     ave_degree = df[key]['Num_edges']/df[key]['Num_nodes']
     df.insert(i+i*2+2, column=(key, 'Average_degree'), value=ave_degree)
-  density = 2 * df[key]['Num_edges'] / (df[key]['Num_nodes'] * (df[key]['Num_nodes'] - 1))
-
 
   for i, key in enumerate(param):
-    transitivity = []
+    density = []
     for j in range(length):
-      transitivity.append(nx.density(graphs[i*length+j]))
-    df.insert(i+i*3+3, column=(key, 'Density'), value=transitivity)
+      density.append(nx.density(graphs[i*length+j]))
+    df.insert(i+i*3+3, column=(key, 'Density'), value=density)
 
   for i, key in enumerate(param):
     transitivity = []
     for j in range(length):
       transitivity.append(nx.transitivity(graphs[i*length+j]))
     df.insert(i+i*4+4, column=(key, 'Transitivity'), value=transitivity)
+
+  for i, key in enumerate(param):
+    avg_shortest_path = []
+    for j in range(length):
+      avg_shortest_path.append(calculate_avg_shortest_path(dgl.from_networkx(graphs[i*length+j])))
+    df.insert(i+i*5+5, column=(key, 'avg_shortest_path'), value=avg_shortest_path)  
 
   return df
     

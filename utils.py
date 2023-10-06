@@ -179,8 +179,6 @@ def topk(
 
     return perm, k
 
-
-
 def find(str2):
   # Set the directory path
   dir_path = "output/"
@@ -192,3 +190,18 @@ def find(str2):
 
   # Pass the folder name to the command line
   return matching_names[0]
+
+def calculate_avg_shortest_path(graph):
+    matrix = dgl.shortest_dist(graph)
+    # Get the dimensions of the matrix
+    rows, cols = matrix.size()
+    # Create a mask for the upper half (above the diagonal)
+    mask = torch.triu(torch.ones(rows, cols, dtype=torch.uint8), diagonal=1)
+    # Calculate the sum of elements in the upper half
+    sum_upper_half = torch.sum(matrix * mask)
+    # Calculate the number of elements in the upper half
+    count = torch.sum(mask)
+    # Calculate the average of the upper half
+    average_upper_half = sum_upper_half / count
+
+    return average_upper_half

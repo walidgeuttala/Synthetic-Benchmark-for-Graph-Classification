@@ -13,6 +13,7 @@ import os
 import json 
 import torch
 from identity import compute_identity
+from utils import calculate_avg_shortest_path
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Testing Stanford Networks")
@@ -47,6 +48,7 @@ def stanford_degree_dist_plots(draw = True):
     names = []
     density = []
     transitivity = []
+    avg_short_path = []
     with open('links.txt', 'r') as file:
         # Iterate over each line in the file
         f = 0
@@ -60,6 +62,7 @@ def stanford_degree_dist_plots(draw = True):
                     f = 0
                 else:
                     graph, name = download_Stanford_network(line[:-1])
+                    avg_short_path.append(calculate_avg_shortest_path(graph))
                     graph = dgl.to_networkx(graph)
                     graph = nx.Graph(graph)
                     names.append(name[:-7])
@@ -69,17 +72,19 @@ def stanford_degree_dist_plots(draw = True):
                     if draw == True:
                         print("network name : "+names[-1])
                         print()
-                        print("density : ",density[-1])
-                        print("transitivity : ",transitivity[-1])
-                        graph = nx.Graph(graph)
                         print('number of nodes : ',graph.number_of_nodes())
+                        print('average_shortest_path', avg_short_path[-1])
+                        print("transitivity : ",transitivity[-1])
+                        print("density : ",density[-1])
+                        graph = nx.Graph(graph)
+                        
                         hist = nx.degree_histogram(graph)
                         plt.plot(hist)
                         plt.xlabel("Degree")
                         plt.ylabel("Frequency")
                         plt.title("Degree Distribution")
                         plt.show()
-    return names, density, transitivity     
+    return names, density, transitivity, avg_short_path     
 
 
 

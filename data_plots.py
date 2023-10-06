@@ -195,14 +195,37 @@ def num_nodes_boxplot(df, length, args):
     plt.show()
     plt.savefig('{}/boxplot_of_nodes.png'.format(args.dataset_path))
 
+def avg_shortest_path_boxplot(df, avg_shortest_path, length, args):
+    plt.figure(figsize=(14, 10))
+    df.iloc[:,5::df.shape[1]//length].boxplot()
+    n = 1
+    if avg_shortest_path == None:
+        n = 0
+    else:
+        n = len(avg_shortest_path)
+    # Add labels and title
+    plt.xlabel('Columns')
+    plt.ylabel('Values')
+    plt.title('Boxplot for each column')
+    color = ['blue', 'orange', 'red', 'green', 'purple', 'brown', 'pink']
+    if args.draw_stanford_points == True:
+        for i in range(n):
+            for j in range(length):
+                plt.scatter(j+1, avg_shortest_path[i], color=color[i%len(color)],label=names[i])
+        
+    # Show the plot
+    plt.legend()
+    # Show the plot
+    plt.savefig('{}/Boxplot for each column avg_shortest_path.png'.format(args.dataset_path))
+    plt.show()
 
 if __name__ == "__main__":
     args = parse_args()
     names2 = args.types.split(',')
-    names, density, transitivity = None, None, None
+    names, density, transitivity, avg_shortest_path = None, None, None, None
     args.draw_stanford_points = False
     if args.draw_stanford_points == True:
-        names, density, transitivity = stanford_degree_dist_plots(False)
+        names, density, transitivity, avg_shortest_path = stanford_degree_dist_plots(False)
     df = pd.read_csv('{}/info_about_graphs.csv'.format(args.dataset_path), header=[0,1])
     param = torch.load('{}/parameters_generated_data.pth'.format(args.dataset_path))
 
@@ -221,6 +244,8 @@ if __name__ == "__main__":
             average_degree_boxplot(df, len(param.keys()), args)
         elif name == "num_edge_boxplot":
             num_edge_boxplot(df, len(param.keys()), args)
+        elif name == "average_path":
+            avg_shortest_path_boxplot(df, avg_shortest_path, len(param.keys), args)
         elif name == "num_nodes_boxplot":
             num_nodes_boxplot(df, len(param.keys()), args)
         print()
