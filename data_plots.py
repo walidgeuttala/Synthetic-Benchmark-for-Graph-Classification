@@ -73,8 +73,16 @@ def draw_distribution(data, args):
 
 def draw_dist_density(df, length, args):
     density = df.iloc[:,3::df.shape[1]//length]
-    
+    for column in density.columns:
+        draw_distribution(density[column], args)
 
+def draw_dist_edges(df, length, args):
+    density = df.iloc[:,1::df.shape[1]//length]
+    for column in density.columns:
+        draw_distribution(density[column], args)
+
+def draw_dist_nodes(df, length, args):
+    density = df.iloc[:,0::df.shape[1]//length]
     for column in density.columns:
         draw_distribution(density[column], args)
 
@@ -271,5 +279,9 @@ if __name__ == "__main__":
             num_nodes_boxplot(df, len(param.keys()), args)
         elif name == "draw_dist_density":
             draw_dist_density(df, len(param.keys()), args)
+        elif name == "draw_dist_nodes":
+            draw_dist_nodes(df, len(param.keys()), args)
+        elif name == "draw_dist_edges":
+            draw_dist_edges(df, len(param.keys()), args)
         print()
 

@@ -20,14 +20,14 @@ from test_stanford_networks import test_networks
 
 def parse_args():
     parser = argparse.ArgumentParser(description="GNN for network classification")
-    parser.add_argument("--dataset", type=str, default="grid_dataset", choices=["dataset_ws_k_2", "dataset_ws_k_2_4", "dataset_ws_k_2_8", 'grid_dataset'], help="dataset1/dataset2/dataset3/dataset4")
+    parser.add_argument("--dataset", type=str, default="grid_dataset", choices=["dataset_ws_k_2", "dataset_ws_k_2_4", "dataset_ws_k_2_8", 'grid_dataset'], help="just naming of the data added to the info after training the model")
     parser.add_argument("--plot_statistics", type=bool, default=False, help="do plots about acc/loss/boxplot")
     parser.add_argument("--feat_type", type=str, default="ones_feat", choices=["ones_feat", "noise_feat", "degree_feat", "identity_feat"], help="ones_feat/noies_feat/degree_feat/identity_feat")
     parser.add_argument("--batch_size", type=int, default=100, help="batch size")
     parser.add_argument("--lr", type=float, default=0.01, help="learning rate")
-    parser.add_argument("--weight_decay", type=float, default=0.0, help="weight decay")
+    parser.add_argument("--weight_decay", type=float, default=0.0, help="weight decay of the learning rate over epochs for the optimizer")
     parser.add_argument("--pool_ratio", type=float, default=0.25, help="pooling ratio")
-    parser.add_argument("--hid_dim", type=int, default=64, help="hidden size")
+    parser.add_argument("--hid_dim", type=int, default=64, help="hidden size, number of neuron in every hidden layer but could change for currten type of networks")
     parser.add_argument("--dropout", type=float, default=0.5, help="dropout ratio")
     parser.add_argument("--epochs", type=int, default=100, help="max number of training epochs")
     parser.add_argument("--patience", type=int, default=-1, help="patience for early stopping, -1 for no stop")
@@ -149,7 +149,7 @@ def main(args, seed, save=True):
 
     device = args.device
     
-    set_random_seed(42)
+    set_random_seed(seed)
 
     # Step 2: Create model =================================================================== #
     num_feature, num_classes, _ = dataset.statistics()
