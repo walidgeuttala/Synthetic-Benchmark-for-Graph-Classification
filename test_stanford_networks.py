@@ -73,6 +73,7 @@ def stanford_degree_dist_plots(draw = True):
                         print("network name : "+names[-1])
                         print()
                         print('number of nodes : ',graph.number_of_nodes())
+                        print('nuler of edges : ', graph.number_of_edges())
                         print('average_shortest_path', avg_short_path[-1])
                         print("transitivity : ",transitivity[-1])
                         print("density : ",density[-1])

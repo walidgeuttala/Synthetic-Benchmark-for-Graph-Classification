@@ -1,7 +1,7 @@
 
 Social networks
 http://snap.stanford.edu/data/facebook_combined.txt.gz
-http://snap.stanford.edu/data/wiki-Vote.txt.gz
+http://snap.stanford.edu/data/  .txt.gz
 
 Networks with ground-truth communities
 http://snap.stanford.edu/data/email-Eu-core.txt.gz

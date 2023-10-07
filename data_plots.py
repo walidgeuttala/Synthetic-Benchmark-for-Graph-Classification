@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import argparse
 import json
+import matplotlib.pyplot as plt
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Dataset plot statistics")
@@ -56,6 +57,25 @@ def degree_dist(pick, names , args):
             plt.title("Degree Distribution of "+names[i])
             plt.savefig('{}/Degree Distribution of {}.png'.format(args.dataset_path, names[i]))
             plt.show()
+
+def draw_distribution(data, name, args):
+    # Create a histogram to visualize the distribution
+    plt.hist(data, bins=20, color='blue', edgecolor='black')
+
+    # Add labels and a title
+    plt.xlabel('X-axis label')
+    plt.ylabel('Frequency')
+    plt.title('Distribution of {}'.format(name))
+
+    # Show the plot
+    plt.savefig('{}/Distribution for {} density.png'.format(args.dataset_path, name))
+    plt.show()
+
+def draw_dist_density(df, names, length, args):
+    density = df.iloc[:,3::df.shape[1]//length]
+
+    for i, name in enumerate(names):
+        draw_distribution(density[:, i], name, args)
 
 def density_boxplot(df, density, names, length, args):
     plt.figure(figsize=(14, 10))
@@ -248,5 +268,7 @@ if __name__ == "__main__":
             avg_shortest_path_boxplot(df, avg_shortest_path, len(param.keys()), args)
         elif name == "num_nodes_boxplot":
             num_nodes_boxplot(df, len(param.keys()), args)
+        elif name == "draw_dist_density":
+            draw_dist_density(df, len(param.keys()), args)
         print()
 
