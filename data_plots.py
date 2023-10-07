@@ -58,24 +58,24 @@ def degree_dist(pick, names , args):
             plt.savefig('{}/Degree Distribution of {}.png'.format(args.dataset_path, names[i]))
             plt.show()
 
-def draw_distribution(data, name, args):
+def draw_distribution(data, args):
     # Create a histogram to visualize the distribution
     plt.hist(data, bins=20, color='blue', edgecolor='black')
 
     # Add labels and a title
     plt.xlabel('X-axis label')
     plt.ylabel('Frequency')
-    plt.title('Distribution of {}'.format(name))
+    plt.title('Distribution of {}'.format(data.columns[0][0]))
 
     # Show the plot
-    plt.savefig('{}/Distribution for {} density.png'.format(args.dataset_path, name))
+    plt.savefig('{}/Distribution for {} density.png'.format(args.dataset_path, data.columns[0][0]))
     plt.show()
 
-def draw_dist_density(df, names, length, args):
+def draw_dist_density(df, length, args):
     density = df.iloc[:,3::df.shape[1]//length]
 
-    for i, name in enumerate(names):
-        draw_distribution(density[:, i], name, args)
+    for i in range(length):
+        draw_distribution(density[:, i], args)
 
 def density_boxplot(df, density, names, length, args):
     plt.figure(figsize=(14, 10))
@@ -269,6 +269,6 @@ if __name__ == "__main__":
         elif name == "num_nodes_boxplot":
             num_nodes_boxplot(df, len(param.keys()), args)
         elif name == "draw_dist_density":
-            draw_dist_density(df, names, len(param.keys()), args)
+            draw_dist_density(df, len(param.keys()), args)
         print()
 
