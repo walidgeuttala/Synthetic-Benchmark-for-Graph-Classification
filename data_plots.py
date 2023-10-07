@@ -60,7 +60,7 @@ def degree_dist(pick, names , args):
 
 def draw_distribution(data, args):
     # Create a histogram to visualize the distribution
-    plt.hist(data, bins=20, color='blue', edgecolor='black')
+    plt.hist(data, bins=100, color='blue', edgecolor='black')
 
     # Add labels and a title
     plt.xlabel('X-axis label')
@@ -76,7 +76,6 @@ def draw_dist_density(df, length, args):
     
 
     for column in density.columns:
-        print(density[column])
         draw_distribution(density[column], args)
 
 def density_boxplot(df, density, names, length, args):
