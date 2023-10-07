@@ -65,10 +65,10 @@ def draw_distribution(data, args):
     # Add labels and a title
     plt.xlabel('X-axis label')
     plt.ylabel('Frequency')
-    plt.title('Distribution of {}'.format(data.columns[0][0]))
+    plt.title('Distribution of {}'.format(data.name))
 
     # Show the plot
-    plt.savefig('{}/Distribution for {} density.png'.format(args.dataset_path, data.columns[0][0]))
+    plt.savefig('{}/Distribution for {} density.png'.format(args.dataset_path, data.name))
     plt.show()
 
 def draw_dist_density(df, length, args):
