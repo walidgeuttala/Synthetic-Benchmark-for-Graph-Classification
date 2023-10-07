@@ -73,12 +73,11 @@ def draw_distribution(data, args):
 
 def draw_dist_density(df, length, args):
     density = df.iloc[:,3::df.shape[1]//length]
-    print(density)
     
-    for i in range(length):
-        print(density[:, i])
-        break
-        draw_distribution(density[:, i], args)
+
+    for column in density.columns:
+        print(density[column])
+        draw_distribution(density[column], args)
 
 def density_boxplot(df, density, names, length, args):
     plt.figure(figsize=(14, 10))
