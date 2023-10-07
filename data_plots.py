@@ -73,7 +73,8 @@ def draw_distribution(data, args):
 
 def draw_dist_density(df, length, args):
     density = df.iloc[:,3::df.shape[1]//length]
-
+    print(density)
+    
     for i in range(length):
         print(density[:, i])
         break
