@@ -269,6 +269,6 @@ if __name__ == "__main__":
         elif name == "num_nodes_boxplot":
             num_nodes_boxplot(df, len(param.keys()), args)
         elif name == "draw_dist_density":
-            draw_dist_density(df, len(param.keys()), args)
+            draw_dist_density(df, names, len(param.keys()), args)
         print()
 
