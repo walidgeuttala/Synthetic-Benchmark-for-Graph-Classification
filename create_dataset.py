@@ -62,6 +62,7 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
     
   # Store the parameters in a 2D numpy array
   if networks == "all" or "ER_low" in networks:
+    np.random.seed(saved_seed)
     n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
     seed += 1
     p = np.vectorize(my_random_function)(n)
@@ -69,6 +70,7 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
     idx += 1
 
   if networks == "all" or "ER_high" in networks:
+    np.random.seed(saved_seed)
     n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
     seed += 1
     p = np.vectorize(my_random_function)(n)
