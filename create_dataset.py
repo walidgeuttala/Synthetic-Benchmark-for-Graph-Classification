@@ -7,7 +7,7 @@ import pandas as pd
 import subprocess
 import networkit as nk
 import random 
-from utils import calculate_avg_shortest_path
+from utils import *
 import dgl
 
 # Generates the parameters for the data generating function
@@ -15,7 +15,7 @@ import dgl
 # and other seeds will be seed+=1
 degree_fixed = 4
 
-def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
+def generate_parameters(data_dist = [250] * 5, networks="all", even = False, seed=42):
   # Dictionary to save the parameters generated for our data generating function
   param = dict()
   idx = 0
@@ -64,6 +64,8 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
   if networks == "all" or "ER_low" in networks:
     np.random.seed(saved_seed)
     n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+    if even == True:
+      n[n % 2 == 1] += 1
     seed += 1
     p = np.vectorize(my_random_function)(n)
     param['ER_low'] = np.column_stack((n, p))
@@ -72,6 +74,8 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
   if networks == "all" or "ER_high" in networks:
     np.random.seed(saved_seed)
     n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+    if even == True:
+      n[n % 2 == 1] += 1
     seed += 1
     p = np.vectorize(my_random_function)(n)
     param['ER_high'] = np.column_stack((n, p))
@@ -83,6 +87,8 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
     np.random.seed(saved_seed)
     # Generates an array of random integers between min_n and max_n with the size of data_dist[idx]
     n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+    if even == True:
+      n[n % 2 == 1] += 1
     seed += 1
     np.random.seed(seed)
     # Generates an array of random integers between min_k and max_k even with the size of data_dist[idx]
@@ -100,6 +106,8 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
     np.random.seed(saved_seed)
     # Generates an array of random integers between min_n and max_n with the size of data_dist[idx]
     n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+    if even == True:
+      n[n % 2 == 1] += 1
     seed += 1
     np.random.seed(seed)
     # Generates an array of random integers between min_k and max_k even with the size of data_dist[idx]
@@ -118,6 +126,8 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
   if networks == "all" or "BA_low" in networks:
     np.random.seed(saved_seed)
     n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+    if even == True:
+      n[n % 2 == 1] += 1
     seed += 1
     np.random.seed(seed)
     m = np.array(np.random.randint(min_m, max_m, data_dist[idx]))
@@ -128,6 +138,8 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
   if networks == "all" or "BA_high" in networks:
     np.random.seed(saved_seed)
     n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+    if even == True:
+      n[n % 2 == 1] += 1
     seed += 1
     np.random.seed(seed)
     m = np.array(np.random.randint(min_m, max_m, data_dist[idx]))
@@ -138,10 +150,17 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
   # graph GRID low transtivity parameters
   # Store the parameters for the grid_low graph in a dictionary
   if networks == "all" or "grid_low" in networks:
-    np.random.seed(saved_seed)
-    x = np.array(np.random.randint(nodes_min, nodes_max, data_dist[idx]))
-    np.random.seed(saved_seed+1)
-    y = np.array(np.random.randint(nodes_min, nodes_max, data_dist[idx]))
+    if even == True:
+      np.random.seed(saved_seed)
+      n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+      n = np.array([generate_factors(n) for n in n])
+      x, y = n[:, 0], n[:, 1]
+    else:
+      np.random.seed(saved_seed)
+      x = np.array(np.random.randint(nodes_min, nodes_max, data_dist[idx]))
+      np.random.seed(saved_seed+1)
+      y = np.array(np.random.randint(nodes_min, nodes_max, data_dist[idx]))
+    
     np.random.seed(seed)
     seed += 1  
     param['grid_tr_low'] = np.column_stack((x, y))
@@ -150,10 +169,16 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
   # graph GRID high transtivity parameters
   # Store the parameters for the grid_high graph in a dictionary
   if networks == "all" or "grid_high" in networks:
-    np.random.seed(saved_seed)
-    x = np.array(np.random.randint(nodes_min, nodes_max, data_dist[idx]))
-    np.random.seed(saved_seed+1)
-    y = np.array(np.random.randint(nodes_min, nodes_max, data_dist[idx]))
+    if even == True:
+      np.random.seed(saved_seed)
+      n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+      n = np.array([generate_factors(n) for n in n])
+      x, y = n[:, 0], n[:, 1]
+    else:
+      np.random.seed(saved_seed)
+      x = np.array(np.random.randint(nodes_min, nodes_max, data_dist[idx]))
+      np.random.seed(saved_seed+1)
+      y = np.array(np.random.randint(nodes_min, nodes_max, data_dist[idx]))
     np.random.seed(seed)
     seed += 1
     param['grid_tr_high'] = np.column_stack((x, y))

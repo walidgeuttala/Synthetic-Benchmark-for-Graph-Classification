@@ -8,7 +8,7 @@ import dgl
 import random
 import os
 import re
-
+import numpy as np
 def get_stats(
     array, conf_interval=False, name=None, stdout=False, logout=False
 ):
@@ -205,3 +205,24 @@ def calculate_avg_shortest_path(graph):
     average_upper_half = sum_upper_half / count
 
     return float(average_upper_half)
+
+
+def generate_factors(n):
+    if n % 2 != 0:
+        raise ValueError("Input must be an even number.")
+    
+    # Initialize a list to store the factors of n
+    factors = []
+    
+    # Find factors of n
+    for i in range(2, n // 2 + 1):
+        if n % i == 0:
+            factors.append(i)
+    
+    # Randomly choose one of the factors as 'a'
+    a = random.choice(factors)
+    
+    # Calculate 'b' as 'n' divided by 'a'
+    b = n // a
+    
+    return a, b
