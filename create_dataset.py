@@ -65,7 +65,7 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
     n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
     seed += 1
     p = np.vectorize(my_random_function)(n)
-    param['ER'] = np.column_stack((n, p))
+    param['ER_low'] = np.column_stack((n, p))
     idx += 1
 
   if networks == "all" or "ER_high" in networks:
