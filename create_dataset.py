@@ -13,6 +13,8 @@ import dgl
 # Generates the parameters for the data generating function
 # The seed value is incremented each time so that we can get the same dataset next time we only set the seed parameter
 # and other seeds will be seed+=1
+degree_fixed = 4
+
 def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
   # Dictionary to save the parameters generated for our data generating function
   param = dict()
@@ -171,7 +173,7 @@ def generate_data(param, data_dist, networks="all"):
     # ER Graphs
     if networks == "all" or "ER" in networks:
       for i in range(data_dist[idx]):
-          graphs.append(nx.gnp_random_graph(int(param['ER'][i, 0]), param['ER'][i, 1], seed=i, directed=False))
+          graphs.append(nx.gnp_random_graph(int(param['ER'][i, 0]), degree_fixed / (int(param['ER'][i, 0])), seed=i, directed=False))
       idx += 1
     
     # WS Graphs
@@ -184,7 +186,7 @@ def generate_data(param, data_dist, networks="all"):
     # BA Graphs
     if networks == "all" or "BA" in networks:
       for i in range(data_dist[idx]):
-          graphs.append(nx.barabasi_albert_graph(int(param['BA'][i,0]), int(param['BA'][i,1]), seed=i, initial_graph=None))
+          graphs.append(nx.barabasi_albert_graph(int(param['BA'][i,0]), min(degree_fixed // 2, int(param['BA'][i,0]) - 1), seed=i, initial_graph=None))
       idx += 1
     
     # 2D Grid using manhattan distance low transitivity
