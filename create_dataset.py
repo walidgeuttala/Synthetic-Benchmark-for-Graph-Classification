@@ -153,6 +153,7 @@ def generate_parameters(data_dist = [250] * 5, networks="all", even = False, see
     if even == True:
       np.random.seed(saved_seed)
       n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+      n[n % 2 == 1] += 1
       n = np.array([generate_factors(nn) for nn in n])
       x, y = n[:, 0], n[:, 1]
     else:
@@ -172,6 +173,7 @@ def generate_parameters(data_dist = [250] * 5, networks="all", even = False, see
     if even == True:
       np.random.seed(saved_seed)
       n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+      n[n % 2 == 1] += 1
       n = np.array([generate_factors(nn) for nn in n])
       x, y = n[:, 0], n[:, 1]
     else:
