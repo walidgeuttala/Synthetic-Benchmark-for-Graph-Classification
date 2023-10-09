@@ -61,16 +61,23 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
     return np.random.uniform(2/x, 4/x, 1)
     
   # Store the parameters in a 2D numpy array
-  if networks == "all" or "ER" in networks:
+  if networks == "all" or "ER_low" in networks:
     n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
     seed += 1
     p = np.vectorize(my_random_function)(n)
     param['ER'] = np.column_stack((n, p))
     idx += 1
 
+  if networks == "all" or "ER_high" in networks:
+    n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+    seed += 1
+    p = np.vectorize(my_random_function)(n)
+    param['ER_high'] = np.column_stack((n, p))
+    idx += 1
+
   # Graph WS parameters
   # Store the parameters in a 2D numpy array
-  if networks == "all" or "WS" in networks:
+  if networks == "all" or "WS_low" in networks:
     np.random.seed(saved_seed)
     # Generates an array of random integers between min_n and max_n with the size of data_dist[idx]
     n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
@@ -84,19 +91,46 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
     # Generates an array of random floating point numbers between min_w and max_w with the size of data_dist[idx]
     p = np.random.uniform(min_w, max_w, data_dist[idx])
     seed+=1
-    param['WS'] = np.column_stack((n, k, p))
+    param['WS_low'] = np.column_stack((n, k, p))
+    idx += 1
+
+  if networks == "all" or "WS_high" in networks:
+    np.random.seed(saved_seed)
+    # Generates an array of random integers between min_n and max_n with the size of data_dist[idx]
+    n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+    seed += 1
+    np.random.seed(seed)
+    # Generates an array of random integers between min_k and max_k even with the size of data_dist[idx]
+    k = np.array(np.random.randint(min_k, max_k+1, data_dist[idx]))
+    k = np.floor_divide(k, 2) * 2 * 2
+    seed += 1
+    np.random.seed(seed)
+    # Generates an array of random floating point numbers between min_w and max_w with the size of data_dist[idx]
+    p = np.random.uniform(min_w, max_w, data_dist[idx])
+    seed+=1
+    param['WS_high'] = np.column_stack((n, k, p))
     idx += 1
 
   # graph BA parameters
   # Store the parameters for the BA graph in a dictionary
-  if networks == "all" or "BA" in networks:
+  if networks == "all" or "BA_low" in networks:
     np.random.seed(saved_seed)
     n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
     seed += 1
     np.random.seed(seed)
     m = np.array(np.random.randint(min_m, max_m, data_dist[idx]))
     seed += 1
-    param['BA'] = np.column_stack((n, m))
+    param['BA_low'] = np.column_stack((n, m))
+    idx += 1
+
+  if networks == "all" or "BA_high" in networks:
+    np.random.seed(saved_seed)
+    n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+    seed += 1
+    np.random.seed(seed)
+    m = np.array(np.random.randint(min_m, max_m, data_dist[idx]))
+    seed += 1
+    param['BA_high'] = np.column_stack((n, m))
     idx += 1
 
   # graph GRID low transtivity parameters
@@ -171,22 +205,38 @@ def generate_data(param, data_dist, networks="all"):
     idx = 0
     
     # ER Graphs
-    if networks == "all" or "ER" in networks:
+    if networks == "all" or "ER_low" in networks:
       for i in range(data_dist[idx]):
-          graphs.append(nx.gnp_random_graph(int(param['ER'][i, 0]), degree_fixed / (int(param['ER'][i, 0])), seed=i, directed=False))
+          graphs.append(nx.gnp_random_graph(int(param['ER_low'][i, 0]), degree_fixed / (int(param['ER_low'][i, 0])), seed=i, directed=False))
+      idx += 1
+
+    if networks == "all" or "ER_high" in networks:
+      for i in range(data_dist[idx]):
+          graphs.append(nx.gnp_random_graph(int(param['ER_high'][i, 0]), degree_fixed*2 / (int(param['ER_high'][i, 0])), seed=i, directed=False))
       idx += 1
     
     # WS Graphs
-    if networks == "all" or "WS" in networks:
+    if networks == "all" or "WS_low" in networks:
       for i in range(data_dist[idx]):
-          edges = int(param['WS'][i,0]*param['WS'][i,1])
-          graphs.append(nx.watts_strogatz_graph(int(param['WS'][i,0]), int(param['WS'][i,1]), param['WS'][i,2], seed=i))
+          edges = int(param['WS_low'][i,0]*param['WS_low'][i,1])
+          graphs.append(nx.watts_strogatz_graph(int(param['WS_low'][i,0]), int(param['WS_low'][i,1]), param['WS_low'][i,2], seed=i))
+      idx += 1
+
+    if networks == "all" or "WS_high" in networks:
+      for i in range(data_dist[idx]):
+          edges = int(param['WS_high'][i,0]*param['WS_high'][i,1])
+          graphs.append(nx.watts_strogatz_graph(int(param['WS_high'][i,0]), int(param['WS_high'][i,1]), param['WS_high'][i,2], seed=i))
       idx += 1
     
     # BA Graphs
-    if networks == "all" or "BA" in networks:
+    if networks == "all" or "BA_low" in networks:
       for i in range(data_dist[idx]):
-          graphs.append(nx.barabasi_albert_graph(int(param['BA'][i,0]), min(degree_fixed // 2, int(param['BA'][i,0]) - 1), seed=i, initial_graph=None))
+          graphs.append(nx.barabasi_albert_graph(int(param['BA_low'][i,0]), min(degree_fixed // 2, int(param['BA_low'][i,0]) - 1), seed=i, initial_graph=None))
+      idx += 1
+
+    if networks == "all" or "BA_high" in networks:
+      for i in range(data_dist[idx]):
+          graphs.append(nx.barabasi_albert_graph(int(param['BA_high'][i,0]), min(degree_fixed*2 // 2, int(param['BA_high'][i,0]) - 1), seed=i, initial_graph=None))
       idx += 1
     
     # 2D Grid using manhattan distance low transitivity
