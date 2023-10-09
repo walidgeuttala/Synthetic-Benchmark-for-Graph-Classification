@@ -38,7 +38,7 @@ def parse_args():
     parser.add_argument("--print_every",type=int,default=10,help="print train log every k epochs, -1 for silent training",)
     parser.add_argument("--num_trials", type=int, default=1, help="number of trials")
     parser.add_argument("--output_path", type=str, default="./output")
-    parser.add_argument("--k", type=int, default="4")
+    parser.add_argument("--k", type=int, default="4", help="for ID-GNN where control the depth of the generated ID features for helping detecting cycles of length k-1 or less")
 
     args = parser.parse_args()
 

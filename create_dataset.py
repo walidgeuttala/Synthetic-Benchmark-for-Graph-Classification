@@ -28,7 +28,7 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
   # Graph WS parameters
   # Each node is joined with its k nearest neighbors in a ring topology
   min_k = 4
-  max_k = 6
+  max_k = 4
   # The probability of rewiring each edge
   min_w = 0.01
   max_w = 0.05
@@ -285,21 +285,24 @@ def create_DF_transtivity_density(param, graphs, data_dist):
 
   # Add data to the list `edges`
   edges = dict()
-  # Index for slicing the list of graphs
-  idx = 0
+  nodes = dict()
 
-  # Loop over n types of graphs
+  idx = 0
   for i, key in enumerate(param.keys()):
     # Append the number of edges for a type of graph to `edges`
-    edges[key] = np.array([g.number_of_edges() for g in graphs[idx:idx+data_dist[i]]]) * 2
+    edges[key] = np.array([g.number_of_edges() for g in graphs[idx:idx+data_dist[i]]])
+    # Increase the index by the number of graphs of this type
+    idx += data_dist[i]
+
+  idx = 0
+  for i, key in enumerate(param.keys()):
+    # Append the number of edges for a type of graph to `edges`
+    nodes[key] = np.array([g.number_of_nodes() for g in graphs[idx:idx+data_dist[i]]])
     # Increase the index by the number of graphs of this type
     idx += data_dist[i]
 
   for key in param.keys():
-    if 'grid' in key:
-      dataFrames.append(pd.DataFrame({'Num_nodes': param[key][:, 0]*param[key][:, 1], 'Num_edges':edges[key]}))
-    else:
-      dataFrames.append(pd.DataFrame({'Num_nodes': param[key][:, 0], 'Num_edges':edges[key]}))
+    dataFrames.append(pd.DataFrame({'Num_nodes': nodes[key], 'Num_edges':edges[key]}))
 
 
   # Concatenate the dataframes along axis 1 (i.e., horizontally)
