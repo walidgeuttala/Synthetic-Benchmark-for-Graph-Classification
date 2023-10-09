@@ -19,7 +19,7 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
   idx = 0
   # General parameters for the 4 graphs
   # Range of generated nodes
-  min_n = 25
+  min_n = 250
   max_n = 1024
 
   # Graph ER parameters
@@ -313,7 +313,7 @@ def create_DF_transtivity_density(param, graphs, data_dist):
 
 
   for i, key in enumerate(param):
-    ave_degree = df[key]['Num_edges']/df[key]['Num_nodes']
+    ave_degree = df[key]['Num_edges'] * 2/df[key]['Num_nodes']
     df.insert(i+i*2+2, column=(key, 'Average_degree'), value=ave_degree)
 
   for i, key in enumerate(param):
