@@ -37,7 +37,7 @@ def generate_parameters(data_dist = [250] * 5, networks="all", seed=42):
   # Graph BA parameters
   # Number of edges to attach from a new node to existing nodes
   min_m = 4
-  max_m = 4 #2
+  max_m = 5 #2
 
   # Graph HB parameters
   # degree 
