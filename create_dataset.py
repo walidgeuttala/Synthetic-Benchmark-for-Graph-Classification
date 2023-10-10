@@ -32,7 +32,7 @@ def generate_parameters(data_dist = [250] * 5, networks="all", even = False, see
   min_k = 4
   max_k = 4
   # The probability of rewiring each edge
-  min_w = 0.01
+  min_w = 0.04
   max_w = 0.05
   # Graph BA parameters
   # Number of edges to attach from a new node to existing nodes
