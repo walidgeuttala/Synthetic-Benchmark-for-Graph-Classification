@@ -208,16 +208,19 @@ def calculate_avg_shortest_path(graph):
 
 
 def generate_factors(n):
-    if n % 2 != 0:
-        raise ValueError("Input must be an even number.")
+    if n <= 9 or n % 2 != 0:
+        raise ValueError("Input must be an even number greater than 9.")
     
     # Initialize a list to store the factors of n
     factors = []
     
     # Find factors of n
-    for i in range(2, n // 2 + 1):
+    for i in range(3, n // 2 + 1):
         if n % i == 0:
             factors.append(i)
+    
+    if not factors:
+        raise ValueError("No suitable factors found for the given input.")
     
     # Randomly choose one of the factors as 'a'
     a = random.choice(factors)
