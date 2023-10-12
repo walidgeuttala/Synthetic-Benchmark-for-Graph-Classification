@@ -27,18 +27,23 @@ def parse_args():
     parser.add_argument("--lr", type=float, default=0.01, help="learning rate")
     parser.add_argument("--weight_decay", type=float, default=0.0, help="weight decay of the learning rate over epochs for the optimizer")
     parser.add_argument("--pool_ratio", type=float, default=0.25, help="pooling ratio")
-    parser.add_argument("--hid_dim", type=int, default=64, help="hidden size, number of neuron in every hidden layer but could change for currten type of networks")
+    parser.add_argument("--hidden_dim", type=int, default=64, help="hidden size, number of neuron in every hidden layer but could change for currten type of networks")
     parser.add_argument("--dropout", type=float, default=0.5, help="dropout ratio")
     parser.add_argument("--epochs", type=int, default=100, help="max number of training epochs")
     parser.add_argument("--patience", type=int, default=-1, help="patience for early stopping, -1 for no stop")
     parser.add_argument("--device", type=int, default=0, help="device id, -1 for cpu")
     parser.add_argument("--architecture",type=str,default="hierarchical",choices=["hierarchical", "global", "gnn", "gin"],help="model architecture",)
     parser.add_argument("--dataset_path", type=str, default="./data", help="path to dataset")
-    parser.add_argument("--conv_layers", type=int, default=3, help="number of conv layers")
+    parser.add_argument("--num_layers", type=int, default=3, help="number of conv layers")
     parser.add_argument("--print_every",type=int,default=10,help="print train log every k epochs, -1 for silent training",)
     parser.add_argument("--num_trials", type=int, default=1, help="number of trials")
     parser.add_argument("--output_path", type=str, default="./output")
     parser.add_argument("--k", type=int, default="4", help="for ID-GNN where control the depth of the generated ID features for helping detecting cycles of length k-1 or less")
+    parser.add_argument("--activation", type=str, default="relu", help="activation function used")
+    parser.add_argument("--output_activation", type=str, default="relu", help="output_activation function")
+    parser.add_argument("--optimizer", type=str, default="adam", help="optimizer type")
+
+
 
     args = parser.parse_args()
 
@@ -261,3 +266,18 @@ if __name__ == "__main__":
 
     with open(args.output, "w") as f:
         json.dump(out_dict, f, sort_keys=True, indent=4)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 

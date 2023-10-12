@@ -9,6 +9,8 @@ import random
 import os
 import re
 import numpy as np
+import math
+
 def get_stats(
     array, conf_interval=False, name=None, stdout=False, logout=False
 ):
@@ -207,25 +209,49 @@ def calculate_avg_shortest_path(graph):
     return float(average_upper_half)
 
 
-def generate_factors(n):
-    if n <= 9 or n % 2 != 0:
-        raise ValueError("Input must be an even number greater than 9.")
+def generate_factors(n, min, max):
     
     # Initialize a list to store the factors of n
     factors = []
     
     # Find factors of n
-    for i in range(3, n // 2 + 1):
+    for i in range(3, n // 2):
         if n % i == 0:
             factors.append(i)
     
-    if not factors:
-        raise ValueError("No suitable factors found for the given input.")
-    
     # Randomly choose one of the factors as 'a'
+    if len(factors) < 2:
+      x = np.random.randint(min, max + 1)
+      return generate_factors(x, min, max)
     a = random.choice(factors)
     
     # Calculate 'b' as 'n' divided by 'a'
     b = n // a
     
     return a, b
+
+
+def is_prime(n):
+    if n == 2:
+        return 1
+    if n%2 == 0 or n == 1:
+        return 0
+    i = 3
+    while i*i<= n:
+        if n % i == 0:
+            return 0
+        i += 2
+        
+    return 1
+
+def generate_uniform_array_non_prime(n, min, max):
+    ans = []
+    while n != 0:
+        x = 2
+        while is_prime(x):
+            x = np.random.randint(min, max + 1)
+            if is_prime(x):
+              print(x)
+        ans.append(x)
+        n-= 1
+    return np.array(ans)
