@@ -55,7 +55,10 @@ def generate_parameters(data_dist = [250] * 5, networks="all", even = False, see
   np.random.seed(seed)
   # Generates an array of random integers between min_n and max_n with the size of data_dist[0]
   saved_seed = seed
-  
+  np.random.seed(saved_seed)
+  n = np.array([generate_factors(nn, min_n, max_n) for nn in n])
+  x, y = n[:, 0], n[:, 1]
+  n = x * y
   #Probability for edge creation.
   def my_random_function(x):
     return np.random.uniform(2/x, 4/x, 1)
@@ -63,7 +66,7 @@ def generate_parameters(data_dist = [250] * 5, networks="all", even = False, see
   # Store the parameters in a 2D numpy array
   if networks == "all" or "ER_low" in networks:
     np.random.seed(saved_seed)
-    n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+   
     if even == True:
       n[n % 2 == 1] += 1
     seed += 1
@@ -73,7 +76,7 @@ def generate_parameters(data_dist = [250] * 5, networks="all", even = False, see
 
   if networks == "all" or "ER_high" in networks:
     np.random.seed(saved_seed)
-    n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+   
     if even == True:
       n[n % 2 == 1] += 1
     seed += 1
@@ -86,7 +89,7 @@ def generate_parameters(data_dist = [250] * 5, networks="all", even = False, see
   if networks == "all" or "WS_low" in networks:
     np.random.seed(saved_seed)
     # Generates an array of random integers between min_n and max_n with the size of data_dist[idx]
-    n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+   
     if even == True:
       n[n % 2 == 1] += 1
     seed += 1
@@ -105,7 +108,7 @@ def generate_parameters(data_dist = [250] * 5, networks="all", even = False, see
   if networks == "all" or "WS_high" in networks:
     np.random.seed(saved_seed)
     # Generates an array of random integers between min_n and max_n with the size of data_dist[idx]
-    n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+   
     if even == True:
       n[n % 2 == 1] += 1
     seed += 1
@@ -125,7 +128,7 @@ def generate_parameters(data_dist = [250] * 5, networks="all", even = False, see
   # Store the parameters for the BA graph in a dictionary
   if networks == "all" or "BA_low" in networks:
     np.random.seed(saved_seed)
-    n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+   
     if even == True:
       n[n % 2 == 1] += 1
     seed += 1
@@ -137,7 +140,7 @@ def generate_parameters(data_dist = [250] * 5, networks="all", even = False, see
 
   if networks == "all" or "BA_high" in networks:
     np.random.seed(saved_seed)
-    n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+   
     if even == True:
       n[n % 2 == 1] += 1
     seed += 1
@@ -152,8 +155,6 @@ def generate_parameters(data_dist = [250] * 5, networks="all", even = False, see
   if networks == "all" or "grid_low" in networks:
     if even == True:
       np.random.seed(saved_seed)
-      n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
-      n = np.array([generate_factors(nn, min_n, max_n) for nn in n])
       x, y = n[:, 0], n[:, 1]
     else:
       np.random.seed(saved_seed)
@@ -171,8 +172,8 @@ def generate_parameters(data_dist = [250] * 5, networks="all", even = False, see
   if networks == "all" or "grid_high" in networks:
     if even == True:
       np.random.seed(saved_seed)
-      n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
-      n = np.array([generate_factors(nn, min_n, max_n) for nn in n])
+     
+     )
       x, y = n[:, 0], n[:, 1]
     else:
       np.random.seed(saved_seed)
@@ -201,7 +202,7 @@ def generate_parameters(data_dist = [250] * 5, networks="all", even = False, see
   
   if networks == "all" or "PC" in networks:
     np.random.seed(saved_seed)
-    n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
+   
     seed += 1
 
     np.random.seed(seed)
