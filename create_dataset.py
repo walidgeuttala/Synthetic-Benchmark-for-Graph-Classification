@@ -56,6 +56,7 @@ def generate_parameters(data_dist = [250] * 5, networks="all", even = False, see
   # Generates an array of random integers between min_n and max_n with the size of data_dist[0]
   saved_seed = seed
   np.random.seed(saved_seed)
+  n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
   n = np.array([generate_factors(nn, min_n, max_n) for nn in n])
   x, y = n[:, 0], n[:, 1]
   n = x * y
