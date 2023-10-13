@@ -263,4 +263,6 @@ def merge_dataframes(length, input_path):
         df_rem = pd.read_csv('/content/{}{}/stanford_output_testing.csv'.format(input_path, i+1), index_col=[0, 1, 2])
         df = pd.concat([df, df_rem])
 
+    df = df * 100
+    pd.set_option('display.float_format', '{:.2f}'.format)
     return df
