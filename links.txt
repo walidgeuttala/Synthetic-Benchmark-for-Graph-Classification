@@ -1,10 +1,14 @@
 
 Social networks
 http://snap.stanford.edu/data/facebook_combined.txt.gz
-http://snap.stanford.edu/data/  .txt.gz
+http://snap.stanford.edu/data/wiki-Vote.txt.gz
 
 Networks with ground-truth communities
 http://snap.stanford.edu/data/email-Eu-core.txt.gz
+
+Internet peer-to-peer networks
+https://snap.stanford.edu/data/p2p-Gnutella04.txt.gz
+https://snap.stanford.edu/data/p2p-Gnutella08.txt.gz
 
 Collaboration networks
 http://snap.stanford.edu/data/ca-GrQc.txt.gz
