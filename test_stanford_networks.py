@@ -21,7 +21,7 @@ def parse_args():
     parser.add_argument(
         "--model_weights_path",
         type=str,
-        default="dataset1",
+        default="dataset",
         help="path for weights of the model",
     )
     parser.add_argument(
@@ -209,6 +209,8 @@ def test_networks(model, args, param):
             torch.cuda.empty_cache()
     df = pd.DataFrame(ans, columns=list(param.keys()))
     df.to_csv("{}/stanford_output_testing.csv".format(args['output_path']))
+    index = [(args['architecture'], args['feat_type'], name) for name in names]
+    df.index = index
     print(df)
     radar_plot(ans, names, args['output_path'], args['feat_type'], param)
                
