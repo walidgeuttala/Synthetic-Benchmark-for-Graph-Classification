@@ -207,9 +207,10 @@ def test_networks(model, args, param):
                     names.append(name[:-7])
                     print()
             torch.cuda.empty_cache()
-    df = pd.DataFrame(ans, columns=list(param.keys()))
     index = [(args['architecture'], args['feat_type'], name) for name in names]
-    df.index = index
+    index = pd.MultiIndex.from_tuples(index, names=['model', 'feat_type', 'network_name'])
+    df = pd.DataFrame(ans, columns=list(param.keys()), index=index)
+    
     print(df)
     df.to_csv("{}/stanford_output_testing.csv".format(args['output_path']), index=True)
     
