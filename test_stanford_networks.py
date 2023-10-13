@@ -200,11 +200,9 @@ def test_networks(model, args, param):
                     names.append(name[:-7])
                     print()
             torch.cuda.empty_cache()
-
-    with open("{}/stanford_output_testing.txt".format(args['output_path']), "w") as file:
-        for sublist in ans:
-            file.write(' '.join(map(str, sublist)) + '\n')
-    print(ans)
+    df = pd.DataFrame(ans, columns=list(param.keys()))
+    df.to_csv("{}/stanford_output_testing.csv".format(args['output_path']))
+    print(df)
     radar_plot(ans, names, args['output_path'], args['feat_type'], param)
                
 
