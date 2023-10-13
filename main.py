@@ -216,7 +216,7 @@ def main(args, seed, save=True):
     train_acc_list = []
     val_acc_list = []
     train_times = []
-    print(seed)
+    
     for e in range(args.epochs):
         s_time = time()
         train_loss = train(model, optimizer, train_loader, device, args, seed, e)
