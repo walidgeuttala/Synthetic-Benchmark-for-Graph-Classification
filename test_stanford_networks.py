@@ -14,6 +14,7 @@ import json
 import torch
 from identity import compute_identity
 from utils import calculate_avg_shortest_path
+import logging
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Testing Stanford Networks")
@@ -199,6 +200,11 @@ def test_networks(model, args, param):
                     names.append(name[:-7])
                     print()
             torch.cuda.empty_cache()
+
+    with open("{}/stanford_output_testing.txt".format(args['output_path']), "w") as file:
+        for sublist in ans:
+            file.write(' '.join(map(str, sublist)) + '\n')
+    print(ans)
     radar_plot(ans, names, args['output_path'], args['feat_type'], param)
                
 
@@ -215,12 +221,11 @@ if __name__ == "__main__":
         args = args['hyper-parameters']
         model_op = get_network(args['architecture'])
         
-        
         model = model_op(
             in_dim=args['num_feature'],
-            hid_dim=args['hid_dim'],
+            hid_dim=args['hidden_dim'],
             out_dim=args['num_classes'],
-            num_convs=args['conv_layers'],
+            num_convs=args['num_layers'],
             pool_ratio=args['pool_ratio'],
             dropout=args['dropout'],
         ).to(args['device'])
