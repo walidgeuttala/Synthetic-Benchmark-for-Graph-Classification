@@ -42,7 +42,7 @@ def parse_args():
     parser.add_argument("--k", type=int, default="4", help="for ID-GNN where control the depth of the generated ID features for helping detecting cycles of length k-1 or less")
     parser.add_argument("--output_activation", type=str, default="log_softmax", help="output_activation function")
     parser.add_argument("--optimizer_name", type=str, default="Adam", help="optimizer type default adam")
-    parser.add_argument("--save_hidden_output_train", type=bool, default=True, help="saving the output before output_activation applied for the model in training")
+    parser.add_argument("--save_hidden_output_train", type=bool, default=False, help="saving the output before output_activation applied for the model in training")
     parser.add_argument("--save_hidden_output_test", type=bool, default=False, help="saving the output before output_activation applied for the model testing/validation")
 
 
