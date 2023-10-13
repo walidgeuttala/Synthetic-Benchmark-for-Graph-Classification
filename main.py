@@ -44,7 +44,7 @@ def parse_args():
     parser.add_argument("--optimizer_name", type=str, default="Adam", help="optimizer type default adam")
     parser.add_argument("--save_hidden_output_train", type=bool, default=False, help="saving the output before output_activation applied for the model in training")
     parser.add_argument("--save_hidden_output_test", type=bool, default=False, help="saving the output before output_activation applied for the model testing/validation")
-    parser.add_argument("--save_last_epoch_hidden_output", typ=bool, default=True, help="saving the last epoch hidden output only if it is false that means save for all epochs this applied to train and test if they are True")
+    parser.add_argument("--save_last_epoch_hidden_output", type=bool, default=True, help="saving the last epoch hidden output only if it is false that means save for all epochs this applied to train and test if they are True")
 
 
     args = parser.parse_args()
