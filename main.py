@@ -41,7 +41,7 @@ def parse_args():
     parser.add_argument("--k", type=int, default="4", help="for ID-GNN where control the depth of the generated ID features for helping detecting cycles of length k-1 or less")
     parser.add_argument("--activation", type=str, default="relu", help="activation function used")
     parser.add_argument("--output_activation", type=str, default="relu", help="output_activation function")
-    parser.add_argument("--optimizer", type=str, default="adam", help="optimizer type")
+    parser.add_argument("--optimizer_name", type=str, default="Adam", help="optimizer type default adam")
 
 
 
@@ -171,9 +171,11 @@ def main(args, seed, save=True):
     args.num_classes = int(num_classes)
 
     # Step 3: Create training components ===================================================== #
-    optimizer = torch.optim.Adam(
-        model.parameters(), lr=args.lr, weight_decay=args.weight_decay
-    )
+    if hasattr(torch.optim, args.optimizer_name):
+        optimizer = getattr(torch.optim, args.optimizer_name)(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)  # Replace `parameters` with your specific parameters
+    else:
+        print(f"Optimizer '{args.optimizer_name}' not found in torch.optim.")
+    
     
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.5)
     
