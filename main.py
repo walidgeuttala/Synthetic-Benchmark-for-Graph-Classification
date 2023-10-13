@@ -44,7 +44,7 @@ def parse_args():
     parser.add_argument("--optimizer_name", type=str, default="Adam", help="optimizer type default adam")
     parser.add_argument("--save_hidden_output_train", type=bool, default=False, help="saving the output before output_activation applied for the model in training")
     parser.add_argument("--save_hidden_output_test", type=bool, default=False, help="saving the output before output_activation applied for the model testing/validation")
-
+    parser.add_argument("--save_last_epoch_hidden_output", typ=bool, default=True, help="saving the last epoch hidden output only if it is false that means save for all epochs this applied to train and test if they are True")
 
 
     args = parser.parse_args()
@@ -89,7 +89,7 @@ def train(model: torch.nn.Module, optimizer, trainloader, device, args, trial, e
         batch_graphs, batch_labels = batch
         batch_graphs = batch_graphs.to(device)
         batch_labels = batch_labels.long().to(device)
-        if args.save_hidden_output_train == True:
+        if args.save_hidden_output_train == True and (args.save_last_epoch_hidden_output == False or e == args.epochs-1):
             out, hidden_feat = model(batch_graphs)
             hidden_feat = hidden_feat.cpu().detach().numpy()
             list_hidden_output.append(hidden_feat)
@@ -101,9 +101,9 @@ def train(model: torch.nn.Module, optimizer, trainloader, device, args, trial, e
         optimizer.step()
         total_loss += loss.item()
 
-    if args.save_hidden_output_train == True:
+    if args.save_hidden_output_train == True and (args.save_last_epoch_hidden_output == False or e == args.epochs-1):
         with h5py.File("{}/save_hidden_output_train_trial{}.h5".format(args.output_path, trial), 'a') as hf:
-            hf.create_dataset('pass_{}'.format(e), data=np.concatenate(list_hidden_output))
+            hf.create_dataset('epoch_{}'.format(e), data=np.concatenate(list_hidden_output))
 
     return total_loss / num_batches
 
@@ -121,7 +121,7 @@ def test(model: torch.nn.Module, loader, device, args, trial, e, if_test):
         num_graphs += batch_labels.size(0)
         batch_graphs = batch_graphs.to(device)
         batch_labels = batch_labels.long().to(device)
-        if args.save_hidden_output_test == True and if_test:
+        if args.save_hidden_output_test == True and if_test and (args.save_last_epoch_hidden_output == False or e == args.epochs-1):
             out, hidden_feat = model(batch_graphs)
             hidden_feat = hidden_feat.cpu().detach().numpy()
             list_hidden_output.append(hidden_feat)
@@ -132,9 +132,9 @@ def test(model: torch.nn.Module, loader, device, args, trial, e, if_test):
         loss += F.nll_loss(out, batch_labels, reduction="sum").item()
         correct += pred.eq(batch_labels).sum().item()
 
-    if args.save_hidden_output_test == True and if_test:
+    if args.save_hidden_output_test == True and if_test and (args.save_last_epoch_hidden_output == False or e == args.epochs-1):
         with h5py.File("{}/save_hidden_output_test_trial{}.h5".format(args.output_path, trial), 'a') as hf:
-            hf.create_dataset('pass_{}'.format(e), data=np.concatenate(list_hidden_output))
+            hf.create_dataset('epoch_{}'.format(e), data=np.concatenate(list_hidden_output))
     
     return correct / num_graphs, loss / num_graphs
 
