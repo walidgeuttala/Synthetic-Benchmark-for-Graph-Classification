@@ -20,9 +20,9 @@ class SAGNetworkHierarchical(torch.nn.Module):
 
     Args:
         in_dim (int): The input node feature dimension.
-        hid_dim (int): The hidden dimension for node feature.
+        hidden_dim (int): The hidden dimension for node feature.
         out_dim (int): The output dimension.
-        num_convs (int, optional): The number of graph convolution layers.
+        num_layers (int, optional): The number of graph convolution layers.
             (default: 3)
         pool_ratio (float, optional): The pool ratio which determines the amount of nodes
             remain after pooling. (default: :obj:`0.5`)
@@ -32,29 +32,29 @@ class SAGNetworkHierarchical(torch.nn.Module):
     def __init__(
         self,
         in_dim: int,
-        hid_dim: int,
+        hidden_dim: int,
         out_dim: int,
-        num_convs=3,
+        num_layers=3,
         pool_ratio: float = 0.5,
         dropout: float = 0.0,
     ):
         super(SAGNetworkHierarchical, self).__init__()
 
         self.dropout = dropout
-        self.num_convpools = num_convs
+        self.num_convpools = num_layers
 
         convpools = []
-        for i in range(num_convs):
-            _i_dim = in_dim if i == 0 else hid_dim
-            _o_dim = hid_dim
+        for i in range(num_layers):
+            _i_dim = in_dim if i == 0 else hidden_dim
+            _o_dim = hidden_dim
             convpools.append(
                 ConvPoolBlock(_i_dim, _o_dim, pool_ratio=pool_ratio)
             )
         self.convpools = torch.nn.ModuleList(convpools)
 
-        self.lin1 = torch.nn.Linear(hid_dim * 2, hid_dim)
-        self.lin2 = torch.nn.Linear(hid_dim, hid_dim // 2)
-        self.lin3 = torch.nn.Linear(hid_dim // 2, out_dim)
+        self.lin1 = torch.nn.Linear(hidden_dim * 2, hidden_dim)
+        self.lin2 = torch.nn.Linear(hidden_dim, hidden_dim // 2)
+        self.lin3 = torch.nn.Linear(hidden_dim // 2, out_dim)
 
     def forward(self, graph: dgl.DGLGraph):
         feat = graph.ndata["feat"]
@@ -81,9 +81,9 @@ class SAGNetworkGlobal(torch.nn.Module):
 
     Args:
         in_dim (int): The input node feature dimension.
-        hid_dim (int): The hidden dimension for node feature.
+        hidden_dim (int): The hidden dimension for node feature.
         out_dim (int): The output dimension.
-        num_convs (int, optional): The number of graph convolution layers.
+        num_layers (int, optional): The number of graph convolution layers.
             (default: 3)
         pool_ratio (float, optional): The pool ratio which determines the amount of nodes
             remain after pooling. (default: :obj:`0.5`)
@@ -93,37 +93,37 @@ class SAGNetworkGlobal(torch.nn.Module):
     def __init__(
         self,
         in_dim: int,
-        hid_dim: int,
+        hidden_dim: int,
         out_dim: int,
-        num_convs=3,
+        num_layers=3,
         pool_ratio: float = 0.5,
         dropout: float = 0.0,
     ):
         super(SAGNetworkGlobal, self).__init__()
         self.dropout = dropout
-        self.num_convs = num_convs
+        self.num_layers = num_layers
 
         convs = []
-        for i in range(num_convs):
-            _i_dim = in_dim if i == 0 else hid_dim
-            _o_dim = hid_dim
+        for i in range(num_layers):
+            _i_dim = in_dim if i == 0 else hidden_dim
+            _o_dim = hidden_dim
             convs.append(GraphConv(_i_dim, _o_dim))
         self.convs = torch.nn.ModuleList(convs)
 
-        concat_dim = num_convs * hid_dim
+        concat_dim = num_layers * hidden_dim
         self.pool = SAGPool(concat_dim, ratio=pool_ratio)
         self.avg_readout = AvgPooling()
         self.max_readout = MaxPooling()
 
-        self.lin1 = torch.nn.Linear(concat_dim * 2, hid_dim)
-        self.lin2 = torch.nn.Linear(hid_dim, hid_dim // 2)
-        self.lin3 = torch.nn.Linear(hid_dim // 2, out_dim)
+        self.lin1 = torch.nn.Linear(concat_dim * 2, hidden_dim)
+        self.lin2 = torch.nn.Linear(hidden_dim, hidden_dim // 2)
+        self.lin3 = torch.nn.Linear(hidden_dim // 2, out_dim)
 
     def forward(self, graph: dgl.DGLGraph):
         feat = graph.ndata["feat"]
         conv_res = []
 
-        for i in range(self.num_convs):
+        for i in range(self.num_layers):
             feat = self.convs[i](graph, feat)
             conv_res.append(feat)
 
@@ -148,7 +148,7 @@ class GNN(torch.nn.Module):
     using a linear layer.
 
     Args:
-        num_convs (int): Number of layers in the GNN
+        num_layers (int): Number of layers in the GNN
         hidden_dim (int): Hidden dimension of the GNN layers
         drop (float): Dropout probability to use during training (default: 0)
 
@@ -167,9 +167,9 @@ class GNN(torch.nn.Module):
     def __init__(
         self,
         in_dim: int,
-        hid_dim: int,
+        hidden_dim: int,
         out_dim: int,
-        num_convs=3,
+        num_layers=3,
         pool_ratio: float = 0.5,
         dropout: float = 0.0,
     ):
@@ -177,36 +177,36 @@ class GNN(torch.nn.Module):
         Initializes a new instance of the GNN class.
 
         Args:
-            num_convs (int): Number of layers in the GNN
+            num_layers (int): Number of layers in the GNN
             hidden_dim (int): Hidden dimension of the GNN layers
             drop (float): Dropout probability to use during training (default: 0)
 
         """
         super().__init__()
         self.layers = torch.nn.ModuleList()
-        self.num_convs = num_convs
+        self.num_layers = num_layers
         self.input_dim = in_dim
         self.output_dim = out_dim
         
         # Create GNN layers
-        for layer in range(num_convs - 1):  # excluding the input layer
+        for layer in range(num_layers - 1):  # excluding the input layer
             if layer == 0:
-                conv = SAGEConv(self.input_dim, hid_dim, "mean", dropout, True, torch.nn.BatchNorm1d(hid_dim), torch.nn.ReLU())
+                conv = SAGEConv(self.input_dim, hidden_dim, "mean", dropout, True, torch.nn.BatchNorm1d(hidden_dim), torch.nn.ReLU())
             else:
-                conv = SAGEConv(hid_dim, hid_dim, "mean", dropout, True, torch.nn.BatchNorm1d(hid_dim), torch.nn.ReLU())
+                conv = SAGEConv(hidden_dim, hidden_dim, "mean", dropout, True, torch.nn.BatchNorm1d(hidden_dim), torch.nn.ReLU())
             self.layers.append(conv)
         
         # Create linear prediction layers
         self.linear_prediction = torch.nn.ModuleList()
-        for layer in range(num_convs-1):
-            self.linear_prediction.append(torch.nn.Sequential(torch.nn.Linear(hid_dim, self.output_dim),
+        for layer in range(num_layers-1):
+            self.linear_prediction.append(torch.nn.Sequential(torch.nn.Linear(hidden_dim, self.output_dim),
                                         torch.nn.ReLU(),
                                         torch.nn.BatchNorm1d(self.output_dim)))
         
         # Create sum pooling module
         self.pool = SumPooling()
 
-        self.weights = np.arange(0.3, num_convs-1, 0.3, dtype=float)
+        self.weights = np.arange(0.3, num_layers-1, 0.3, dtype=float)
 
     def forward(self, graph: dgl.DGLGraph):
         """
@@ -257,29 +257,29 @@ class MLP(nn.Module):
 
 
 class GIN(nn.Module):
-    def __init__(self, in_dim, hid_dim, out_dim, num_convs = 5, pool_ratio=0, dropout=0.5):
+    def __init__(self, in_dim, hidden_dim, out_dim, num_layers = 5, pool_ratio=0, dropout=0.5):
     
         super().__init__()
         self.ginlayers = nn.ModuleList()
         self.batch_norms = nn.ModuleList()
-        num_convs = 5
+        num_layers = 5
         # five-layer GCN with two-layer MLP aggregator and sum-neighbor-pooling scheme
-        for layer in range(num_convs - 1):  # excluding the input layer
+        for layer in range(num_layers - 1):  # excluding the input layer
             if layer == 0:
-                mlp = MLP(in_dim, hid_dim, hid_dim)
+                mlp = MLP(in_dim, hidden_dim, hidden_dim)
             else:
-                mlp = MLP(hid_dim, hid_dim, hid_dim)
+                mlp = MLP(hidden_dim, hidden_dim, hidden_dim)
             self.ginlayers.append(
                 GINConv(mlp, learn_eps=False)
             )  # set to True if learning epsilon
-            self.batch_norms.append(nn.BatchNorm1d(hid_dim))
+            self.batch_norms.append(nn.BatchNorm1d(hidden_dim))
         # linear functions for graph sum poolings of output of each layer
         self.linear_prediction = nn.ModuleList()
-        for layer in range(num_convs):
+        for layer in range(num_layers):
             if layer == 0:
                 self.linear_prediction.append(nn.Linear(in_dim, out_dim))
             else:
-                self.linear_prediction.append(nn.Linear(hid_dim, out_dim))
+                self.linear_prediction.append(nn.Linear(hidden_dim, out_dim))
         self.drop = nn.Dropout(dropout)
         self.pool = (
             SumPooling()

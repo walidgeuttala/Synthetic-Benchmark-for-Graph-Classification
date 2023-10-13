@@ -66,7 +66,7 @@ def parse_args():
         args.patience = args.epochs+1
     name = "Data_{}_Hidden_{}_Arch_{}_Pool_{}_WeightDecay_{}_Lr_{}.log".format(
         args.dataset,
-        args.hid_dim,
+        args.hidden_dim,
         args.architecture,
         args.pool_ratio,
         args.weight_decay,
@@ -161,9 +161,9 @@ def main(args, seed, save=True):
     model_op = get_network(args.architecture)
     model = model_op(
         in_dim=num_feature,
-        hid_dim=args.hid_dim,
+        hidden_dim=args.hidden_dim,
         out_dim=num_classes,
-        num_convs=args.conv_layers,
+        num_layers=args.num_layers,
         pool_ratio=args.pool_ratio,
         dropout=args.dropout,
     ).to(device)
