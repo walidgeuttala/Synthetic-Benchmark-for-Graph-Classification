@@ -37,13 +37,17 @@ class SAGNetworkHierarchical(torch.nn.Module):
         num_layers=3,
         pool_ratio: float = 0.5,
         dropout: float = 0.0,
-        output_activation = 'log_softmax'
+        output_activation = 'log_softmax',
+        save_hidden_output_train = False,
+        save_hidden_output_test = False
     ):
         super(SAGNetworkHierarchical, self).__init__()
 
         self.dropout = dropout
         self.num_convpools = num_layers
         self.output_activation = output_activation
+        self.save_hidden_output_train = save_hidden_output_train
+        self.save_hidden_output_test = save_hidden_output_test
         convpools = []
         for i in range(num_layers):
             _i_dim = in_dim if i == 0 else hidden_dim
@@ -72,7 +76,7 @@ class SAGNetworkHierarchical(torch.nn.Module):
         feat = F.dropout(feat, p=self.dropout, training=self.training)
         feat = F.relu(self.lin2(feat))
 
-        return getattr(F, self.output_activation)(self.lin3(feat), dim=-1)
+        return getattr(F, self.output_activation)(self.lin3(feat), dim=-1), feat
 
 
 class SAGNetworkGlobal(torch.nn.Module):
@@ -98,12 +102,16 @@ class SAGNetworkGlobal(torch.nn.Module):
         num_layers=3,
         pool_ratio: float = 0.5,
         dropout: float = 0.0,
-        output_activation = 'log_softmax'
+        output_activation = 'log_softmax',
+        save_hidden_output_train = False, 
+        save_hidden_output_test = False
     ):
         super(SAGNetworkGlobal, self).__init__()
         self.dropout = dropout
         self.num_layers = num_layers
         self.output_activation = output_activation
+        self.save_hidden_output_train = save_hidden_output_train
+        self.save_hidden_output_test = save_hidden_output_test
         convs = []
         for i in range(num_layers):
             _i_dim = in_dim if i == 0 else hidden_dim
@@ -139,7 +147,7 @@ class SAGNetworkGlobal(torch.nn.Module):
         feat = F.dropout(feat, p=self.dropout, training=self.training)
         feat = F.relu(self.lin2(feat))
 
-        return getattr(F, self.output_activation)(self.lin3(feat), dim=-1)
+        return getattr(F, self.output_activation)(self.lin3(feat), dim=-1), feat
 
 
 class GNN(torch.nn.Module):
@@ -172,7 +180,9 @@ class GNN(torch.nn.Module):
         num_layers=3,
         pool_ratio: float = 0.5,
         dropout: float = 0.0,
-        output_activation = 'log_softmax'
+        output_activation = 'log_softmax',
+        save_hidden_output_train = False, 
+        save_hidden_output_test = False
     ):
         """
         Initializes a new instance of the GNN class.
@@ -189,6 +199,8 @@ class GNN(torch.nn.Module):
         self.input_dim = in_dim
         self.output_dim = out_dim
         self.output_activation = output_activation
+        self.save_hidden_output_train = save_hidden_output_train
+        self.save_hidden_output_test = save_hidden_output_test
         # Create GNN layers
         for layer in range(num_layers - 1):  # excluding the input layer
             if layer == 0:
@@ -236,7 +248,7 @@ class GNN(torch.nn.Module):
             pooled_h = self.pool(graph, h) 
             output += self.linear_prediction[i](pooled_h) * self.weights[i]
 
-        return getattr(F, self.output_activation)(output, dim=-1)
+        return getattr(F, self.output_activation)(output, dim=-1), output
 
 class MLP(nn.Module):
     """Construct two-layer MLP-type aggreator for GIN model"""
@@ -256,12 +268,20 @@ class MLP(nn.Module):
 
 
 class GIN(nn.Module):
-    def __init__(self, in_dim, hidden_dim, out_dim, num_layers = 5, pool_ratio=0, dropout=0.5, output_activation = 'log_softmax'):
+    def __init__(self, in_dim, hidden_dim, 
+                 out_dim, num_layers = 5, 
+                 pool_ratio=0, 
+                 dropout=0.5, 
+                 output_activation = 'log_softmax',
+                 save_hidden_output_train = False, 
+                 save_hidden_output_test = False):
     
         super().__init__()
         self.ginlayers = nn.ModuleList()
         self.batch_norms = nn.ModuleList()
         self.output_activation = output_activation
+        self.save_hidden_output_train = save_hidden_output_train
+        self.save_hidden_output_test = save_hidden_output_test
         num_layers = 5
         # five-layer GCN with two-layer MLP aggregator and sum-neighbor-pooling scheme
         for layer in range(num_layers - 1):  # excluding the input layer
@@ -299,7 +319,7 @@ class GIN(nn.Module):
         for i, h in enumerate(hidden_rep):
             pooled_h = self.pool(g, h)
             score_over_layer += self.drop(self.linear_prediction[i](pooled_h))
-        return  getattr(F, self.output_activation)(score_over_layer, dim=-1)
+        return  getattr(F, self.output_activation)(score_over_layer, dim=-1), score_over_layer
 
 
 

@@ -17,6 +17,7 @@ from torch.utils.data import random_split
 from utils import get_stats, boxplot, acc_loss_plot, set_random_seed
 from data import GraphDataset
 from test_stanford_networks import test_networks
+import h5py
 
 def parse_args():
     parser = argparse.ArgumentParser(description="GNN for network classification")
@@ -41,6 +42,8 @@ def parse_args():
     parser.add_argument("--k", type=int, default="4", help="for ID-GNN where control the depth of the generated ID features for helping detecting cycles of length k-1 or less")
     parser.add_argument("--output_activation", type=str, default="log_softmax", help="output_activation function")
     parser.add_argument("--optimizer_name", type=str, default="Adam", help="optimizer type default adam")
+    parser.add_argument("save_hidden_output_train", type=bool, default=False, help="saving the output before output_activation applied for the model in training")
+    parser.add_argument("save_hidden_output_test", type=bool, default=False, help="saving the output before output_activation applied for the model testing/validation")
 
 
 
@@ -76,40 +79,63 @@ def parse_args():
     return args
 
 
-def train(model: torch.nn.Module, optimizer, trainloader, device):
+def train(model: torch.nn.Module, optimizer, trainloader, device, args, trial, e):
     model.train()
     total_loss = 0.0
     num_batches = len(trainloader)
+    list_hidden_output = []
     for batch in trainloader:
         optimizer.zero_grad()
         batch_graphs, batch_labels = batch
         batch_graphs = batch_graphs.to(device)
         batch_labels = batch_labels.long().to(device)
-        out = model(batch_graphs)
+        if args.save_hidden_output_train == True:
+            out, hidden_feat = model(batch_graphs)
+            hidden_feat = hidden_feat.cpu().detach().numpy()
+            list_hidden_output.append(hidden_feat)
+        else:
+            out, _ = model(batch_graphs)
         loss = F.nll_loss(out, batch_labels)
         loss.backward()
         optimizer.step()
-
         total_loss += loss.item()
+
+    if args.save_hidden_output_train == True:
+        with h5py.File("{}/save_hidden_output_train_trial{}".format(args.output_path, trial), 'a') as hf:
+            hf.create_dataset('pass_{}'.format(e), data=np.concatenate(list_hidden_output))
 
     return total_loss / num_batches
 
 
 @torch.no_grad()
-def test(model: torch.nn.Module, loader, device):
+def test(model: torch.nn.Module, loader, device, args, trial, e, if_test):
     model.eval()
     correct = 0.0
     loss = 0.0
     num_graphs = 0
+    list_hidden_output = []
+
     for batch in loader:
         batch_graphs, batch_labels = batch
         num_graphs += batch_labels.size(0)
         batch_graphs = batch_graphs.to(device)
         batch_labels = batch_labels.long().to(device)
-        out = model(batch_graphs)
+        if args.save_hidden_output_test == True and if_test:
+            out, hidden_feat = model(batch_graphs)
+            hidden_feat = hidden_feat.cpu().detach().numpy()
+            list_hidden_output.append(hidden_feat)
+        else:
+            out, _ = model(batch_graphs)
+        hidden_feat = hidden_feat.cpu().detach().numpy()
+        list_hidden_output.append(hidden_feat)
         pred = out.argmax(dim=1)
         loss += F.nll_loss(out, batch_labels, reduction="sum").item()
         correct += pred.eq(batch_labels).sum().item()
+
+    if args.save_hidden_output_test == True and if_test:
+        with h5py.File("{}/save_hidden_output_test_trial{}".format(args.output_path, trial), 'a') as hf:
+            hf.create_dataset('pass_{}'.format(e), data=np.concatenate(list_hidden_output))
+    
     return correct / num_graphs, loss / num_graphs
 
 
@@ -165,7 +191,9 @@ def main(args, seed, save=True):
         num_layers=args.num_layers,
         pool_ratio=args.pool_ratio,
         dropout=args.dropout,
-        output_activation = args.output_activation
+        output_activation = args.output_activation,
+        save_hidden_output_train = args.save_hidden_output_train,
+        save_hidden_output_test = args.save_hidden_output_test
     ).to(device)
     args.num_feature = int(num_feature)
     args.num_classes = int(num_classes)
@@ -190,15 +218,15 @@ def main(args, seed, save=True):
     train_times = []
     for e in range(args.epochs):
         s_time = time()
-        train_loss = train(model, optimizer, train_loader, device)
+        train_loss = train(model, optimizer, train_loader, device, args, seed, e)
         scheduler.step()
         train_times.append(time() - s_time)
-        train_acc, _ = test(model, train_loader, device)
-        val_acc, val_loss = test(model, val_loader, device)
+        train_acc, _ = test(model, train_loader, device, args, seed, e, 0)
+        val_acc, val_loss = test(model, val_loader, device, args, seed, e, 0)
         train_loss_list.append(train_loss)
         train_acc_list.append(train_acc)
         val_acc_list.append(val_acc)
-        test_acc, _ = test(model, test_loader, device)
+        test_acc, _ = test(model, test_loader, device, args, seed, e, 1)
         if best_val_loss > val_loss:
             best_val_loss = val_loss
             final_test_acc = test_acc
