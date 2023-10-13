@@ -223,9 +223,9 @@ if __name__ == "__main__":
         
         model = model_op(
             in_dim=args['num_feature'],
-            hid_dim=args['hidden_dim'],
+            hidden_dim=args['hidden_dim'],
             out_dim=args['num_classes'],
-            num_convs=args['num_layers'],
+            num_layers=args['num_layers'],
             pool_ratio=args['pool_ratio'],
             dropout=args['dropout'],
         ).to(args['device'])
