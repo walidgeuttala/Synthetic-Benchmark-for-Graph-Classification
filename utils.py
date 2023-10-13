@@ -10,6 +10,7 @@ import os
 import re
 import numpy as np
 import math
+import pandas as pd
 
 def get_stats(
     array, conf_interval=False, name=None, stdout=False, logout=False
@@ -255,3 +256,11 @@ def generate_uniform_array_non_prime(n, min, max):
         ans.append(x)
         n-= 1
     return np.array(ans)
+
+def merge_dataframes(length, input_path):
+    df = pd.read_csv('/content/{}1/stanford_output_testing.csv'.format(output_path))
+    for i in range(1, len):
+        df_rem = pd.read_csv('/content/{}{}/stanford_output_testing.csv'.format(output_path, i+1))
+        df = pd.concat([df, df_rem])
+
+    return df
