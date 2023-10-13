@@ -93,6 +93,7 @@ def train(model: torch.nn.Module, optimizer, trainloader, device, args, trial, e
             out, hidden_feat = model(batch_graphs)
             hidden_feat = hidden_feat.cpu().detach().numpy()
             list_hidden_output.append(hidden_feat)
+            del hidden_feat
         else:
             out, _ = model(batch_graphs)
         loss = F.nll_loss(out, batch_labels)
@@ -101,7 +102,7 @@ def train(model: torch.nn.Module, optimizer, trainloader, device, args, trial, e
         total_loss += loss.item()
 
     if args.save_hidden_output_train == True:
-        with h5py.File("{}/save_hidden_output_train_trial{}".format(args.output_path, trial), 'a') as hf:
+        with h5py.File("{}/save_hidden_output_train_trial{}.h5".format(args.output_path, trial), 'a') as hf:
             hf.create_dataset('pass_{}'.format(e), data=np.concatenate(list_hidden_output))
 
     return total_loss / num_batches
@@ -124,6 +125,7 @@ def test(model: torch.nn.Module, loader, device, args, trial, e, if_test):
             out, hidden_feat = model(batch_graphs)
             hidden_feat = hidden_feat.cpu().detach().numpy()
             list_hidden_output.append(hidden_feat)
+            del hidden_feat
         else:
             out, _ = model(batch_graphs)
         pred = out.argmax(dim=1)
@@ -131,7 +133,7 @@ def test(model: torch.nn.Module, loader, device, args, trial, e, if_test):
         correct += pred.eq(batch_labels).sum().item()
 
     if args.save_hidden_output_test == True and if_test:
-        with h5py.File("{}/save_hidden_output_test_trial{}".format(args.output_path, trial), 'a') as hf:
+        with h5py.File("{}/save_hidden_output_test_trial{}.h5".format(args.output_path, trial), 'a') as hf:
             hf.create_dataset('pass_{}'.format(e), data=np.concatenate(list_hidden_output))
     
     return correct / num_graphs, loss / num_graphs

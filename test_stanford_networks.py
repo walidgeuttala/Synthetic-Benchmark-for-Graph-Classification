@@ -141,7 +141,7 @@ def test_network_diff_nfeat(model, graph, name, device, feat_type, k, param):
     else:
         graph.ndata['feat'] = graph.in_degrees().unsqueeze(1).float().to(device)
     
-    logits = model(graph)
+    logits, _ = model(graph)
     result = softmax(logits)
     ans.append(result[0])
     print('{} {} : '.format(name, feat_type), end='')
