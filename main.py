@@ -39,7 +39,6 @@ def parse_args():
     parser.add_argument("--num_trials", type=int, default=1, help="number of trials")
     parser.add_argument("--output_path", type=str, default="./output")
     parser.add_argument("--k", type=int, default="4", help="for ID-GNN where control the depth of the generated ID features for helping detecting cycles of length k-1 or less")
-    parser.add_argument("--activation", type=str, default="relu", help="activation function used")
     parser.add_argument("--output_activation", type=str, default="relu", help="output_activation function")
     parser.add_argument("--optimizer_name", type=str, default="Adam", help="optimizer type default adam")
 
@@ -166,6 +165,7 @@ def main(args, seed, save=True):
         num_layers=args.num_layers,
         pool_ratio=args.pool_ratio,
         dropout=args.dropout,
+        output_activation = args.output_activation
     ).to(device)
     args.num_feature = int(num_feature)
     args.num_classes = int(num_classes)
