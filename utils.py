@@ -216,7 +216,7 @@ def generate_factors(n, min, max):
     factors = []
     
     # Find factors of n
-    for i in range(3, n // 2):
+    for i in range(4, n // 2):
         if n % i == 0:
             factors.append(i)
     
