@@ -45,7 +45,7 @@ def parse_args():
     parser.add_argument("--save_hidden_output_train", type=bool, default=False, help="saving the output before output_activation applied for the model in training")
     parser.add_argument("--save_hidden_output_test", type=bool, default=False, help="saving the output before output_activation applied for the model testing/validation")
     parser.add_argument("--save_last_epoch_hidden_output", type=bool, default=True, help="saving the last epoch hidden output only if it is false that means save for all epochs this applied to train and test if they are True")
-
+    parser.add_argument("--loss_name", type=str, default='nll_loss', help='choose loss function corrlated to the optimization function')
 
     args = parser.parse_args()
 
@@ -96,7 +96,7 @@ def train(model: torch.nn.Module, optimizer, trainloader, device, args, trial, e
             del hidden_feat
         else:
             out, _ = model(batch_graphs)
-        loss = F.nll_loss(out, batch_labels)
+        loss = getattr(F, args.loss_name)(out, batch_labels)
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
