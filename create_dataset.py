@@ -48,12 +48,6 @@ def generate_parameters(data_dist = [250] * 5, networks="all", even = False, see
   min_degree = 5
   max_degree = 10
 
-  # Graph powerlaw_cluseter
-  proba = 1
-
-  # number of nodes x and y
-  nodes_min = 10
-  nodes_max = 32
   # Graph ER parameters
   seed = np.int64(seed)
   np.random.seed(seed)
