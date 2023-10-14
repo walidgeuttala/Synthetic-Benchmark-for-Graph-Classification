@@ -305,7 +305,7 @@ def create_manhattan_2d_grid_graph(n, m, r):
 
     return G
 
-def create_DF_transtivity_density(param, graphs, data_dist):
+def create_DF(param, graphs, data_dist):
   length = sum(data_dist) // len(param)
   dataFrames = []
 
