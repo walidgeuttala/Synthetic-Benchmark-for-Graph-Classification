@@ -36,8 +36,8 @@ def generate_parameters(data_dist = [250] * 5, networks="all", even = False, see
   #max_w = 0.09
   #min_w = 0.13
   #max_w = 0.16
-  min_w = 0.13
-  max_w = 0.16
+  min_w = 0.7
+  max_w = 0.8
   # Graph BA parameters
   # Number of edges to attach from a new node to existing nodes
   min_m = 4
@@ -191,13 +191,13 @@ def generate_data(param, data_dist, networks="all"):
     if networks == "all" or "WS_low" in networks:
       for i in range(data_dist[idx]):
           edges = int(param['WS_low'][i,0]*param['WS_low'][i,1])
-          graphs.append(nx.newman_watts_strogatz_graph(int(param['WS_low'][i,0]), int(param['WS_low'][i,1])-2, 2/(int(param['WS_low'][i,1])-2), seed=i))
+          graphs.append(nx.watts_strogatz_graph(int(param['WS_low'][i,0]), int(param['WS_low'][i,1]), param['WS_low'][i,2], seed=i))
       idx += 1
 
     if networks == "all" or "WS_high" in networks:
       for i in range(data_dist[idx]):
           edges = int(param['WS_high'][i,0]*param['WS_high'][i,1])
-          graphs.append(nx.newman_watts_strogatz_graph(int(param['WS_high'][i,0]), int(param['WS_high'][i,1])-2, 2/(int(param['WS_high'][i,1])-2), seed=i))
+          graphs.append(nx.watts_strogatz_graph(int(param['WS_high'][i,0]), int(param['WS_high'][i,1]), param['WS_high'][i,2], seed=i))
       idx += 1
     
     # BA Graphs
