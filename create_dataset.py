@@ -36,8 +36,8 @@ def generate_parameters(data_dist = [250] * 5, networks="all", even = False, see
   #max_w = 0.09
   #min_w = 0.13
   #max_w = 0.16
-  min_w = 0.7
-  max_w = 0.8
+  min_w = 0.1
+  max_w = 0.11
   # Graph BA parameters
   # Number of edges to attach from a new node to existing nodes
   min_m = 4
