@@ -278,8 +278,10 @@ class MLP(nn.Module):
 
 
 class GIN(nn.Module):
-    def __init__(self, in_dim, hidden_dim, 
-                 out_dim, num_layers = 5, 
+    def __init__(self, in_dim,
+                 hidden_dim, 
+                 out_dim, 
+                 num_layers = 5, 
                  pool_ratio=0, 
                  dropout=0.5, 
                  output_activation = 'log_softmax',
