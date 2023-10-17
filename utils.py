@@ -259,9 +259,9 @@ def generate_uniform_array_non_prime(n, min, max):
     return np.array(ans)
 
 def merge_dataframes(length, input_path):
-    df = pd.read_csv('/content/{}1/stanford_output_testing.csv'.format(input_path), index_col=[0, 1, 2])
+    df = pd.read_csv('{}1/stanford_output_testing.csv'.format(input_path), index_col=[0, 1, 2])
     for i in range(1, length):
-        df_rem = pd.read_csv('/content/{}{}/stanford_output_testing.csv'.format(input_path, i+1), index_col=[0, 1, 2])
+        df_rem = pd.read_csv('{}{}/stanford_output_testing.csv'.format(input_path, i+1), index_col=[0, 1, 2])
         df = pd.concat([df, df_rem])
 
     df = df * 100

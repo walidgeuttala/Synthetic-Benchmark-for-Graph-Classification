@@ -58,8 +58,8 @@ class SAGNetworkHierarchical(torch.nn.Module):
         self.convpools = torch.nn.ModuleList(convpools)
 
         self.lin1 = torch.nn.Linear(hidden_dim * 2, hidden_dim)
-        self.lin2 = torch.nn.Linear(hidden_dim, hidden_dim // 2)
-        self.lin3 = torch.nn.Linear(hidden_dim // 2, out_dim)
+        self.lin2 = torch.nn.Linear(hidden_dim, hidden_dim)
+        self.lin3 = torch.nn.Linear(hidden_dim, out_dim)
 
     def forward(self, graph: dgl.DGLGraph):
         feat = graph.ndata["feat"]
@@ -125,8 +125,8 @@ class SAGNetworkGlobal(torch.nn.Module):
         self.max_readout = MaxPooling()
 
         self.lin1 = torch.nn.Linear(concat_dim * 2, hidden_dim)
-        self.lin2 = torch.nn.Linear(hidden_dim, hidden_dim // 2)
-        self.lin3 = torch.nn.Linear(hidden_dim // 2, out_dim)
+        self.lin2 = torch.nn.Linear(hidden_dim, hidden_dim)
+        self.lin3 = torch.nn.Linear(hidden_dim, out_dim)
 
     def forward(self, graph: dgl.DGLGraph):
         feat = graph.ndata["feat"]
@@ -201,8 +201,9 @@ class GNN(torch.nn.Module):
         self.output_activation = output_activation
         self.save_hidden_output_train = save_hidden_output_train
         self.save_hidden_output_test = save_hidden_output_test
+        self.ann_inupt_shape = num_layers * hidden_dim 
         # Create GNN layers
-        for layer in range(num_layers - 1):  # excluding the input layer
+        for layer in range(num_layers):  # excluding the input layer
             if layer == 0:
                 conv = SAGEConv(self.input_dim, hidden_dim, "mean", dropout, True, torch.nn.BatchNorm1d(hidden_dim), torch.nn.ReLU())
             else:
@@ -211,10 +212,12 @@ class GNN(torch.nn.Module):
         
         # Create linear prediction layers
         self.linear_prediction = torch.nn.ModuleList()
-        for layer in range(num_layers-1):
-            self.linear_prediction.append(torch.nn.Sequential(torch.nn.Linear(hidden_dim, self.output_dim),
+        for layer in range(num_layers):
+            _i_dim = self.ann_inupt_shape if layer == 0 else hidden_dim
+            _o_dim = hidden_dim
+            self.linear_prediction.append(torch.nn.Sequential(torch.nn.Linear(_i_dim, _o_dim),
                                         torch.nn.ReLU(),
-                                        torch.nn.BatchNorm1d(self.output_dim)))
+                                        torch.nn.BatchNorm1d(_o_dim)))
         
         # Create sum pooling module
         self.pool = SumPooling()
@@ -243,12 +246,19 @@ class GNN(torch.nn.Module):
             hidden_rep.append(feat)
         
         # Perform graph sum pooling over all nodes in each layer and weight for every representation
-        output = 0.
+        output = 0
+        pooled_h = []
         for i, h in enumerate(hidden_rep):
-            pooled_h = self.pool(graph, h) 
-            output += self.linear_prediction[i](pooled_h) * self.weights[i]
+            pooled_h.append(self.linear_prediction[i](self.pool(graph, h)))
+        
+        pooled_hh = torch.stack(pooled_h, dim=0)
+        pooled_h = torch.cat(pooled_h, dim=-1)
+        for i in range(self.num_layers):
+            pooled_h = self.linear_prediction[i](pooled_h)
 
-        return getattr(F, self.output_activation)(output, dim=-1), output
+        
+
+        return getattr(F, self.output_activation)(pooled_h, dim=-1), torch.mean(pooled_hh, dim=0)
 
 class MLP(nn.Module):
     """Construct two-layer MLP-type aggreator for GIN model"""
