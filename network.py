@@ -78,7 +78,7 @@ class SAGNetworkHierarchical(torch.nn.Module):
 
         return getattr(F, self.output_activation)(self.lin3(feat), dim=-1), feat
 
-
+# hidden_dim is the feat output
 class SAGNetworkGlobal(torch.nn.Module):
     """The Self-Attention Graph Pooling Network with global readout in paper
     `Self Attention Graph Pooling <https://arxiv.org/pdf/1904.08082.pdf>`
@@ -149,7 +149,7 @@ class SAGNetworkGlobal(torch.nn.Module):
 
         return getattr(F, self.output_activation)(self.lin3(feat), dim=-1), feat
 
-
+#hideen_feat is the output dim
 class GNN(torch.nn.Module):
     """
     A graph neural network (GNN) that performs graph sum pooling over all nodes in each layer and makes a prediction
