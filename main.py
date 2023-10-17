@@ -21,7 +21,7 @@ import h5py
 
 def parse_args():
     parser = argparse.ArgumentParser(description="GNN for network classification")
-    parser.add_argument("--dataset", type=str, default="grid_dataset", choices=["dataset_ws_k_2", "dataset_ws_k_2_4", "dataset_ws_k_2_8", 'grid_dataset'], help="just naming of the data added to the info after training the model")
+    parser.add_argument("--dataset", type=str, default="dataset", help="just naming of the data added to the info after training the model")
     parser.add_argument("--plot_statistics", type=bool, default=False, help="do plots about acc/loss/boxplot")
     parser.add_argument("--feat_type", type=str, default="ones_feat", choices=["ones_feat", "noise_feat", "degree_feat", "identity_feat"], help="ones_feat/noies_feat/degree_feat/identity_feat")
     parser.add_argument("--batch_size", type=int, default=100, help="batch size")
@@ -44,7 +44,7 @@ def parse_args():
     parser.add_argument("--optimizer_name", type=str, default="Adam", help="optimizer type default adam")
     parser.add_argument("--save_hidden_output_train", type=bool, default=False, help="saving the output before output_activation applied for the model in training")
     parser.add_argument("--save_hidden_output_test", type=bool, default=False, help="saving the output before output_activation applied for the model testing/validation")
-    parser.add_argument("--save_last_epoch_hidden_output", type=bool, default=True, help="saving the last epoch hidden output only if it is false that means save for all epochs this applied to train and test if they are True")
+    parser.add_argument("--save_last_epoch_hidden_output", type=bool, default=False, help="saving the last epoch hidden output only if it is false that means save for all epochs this applied to train and test if they are True")
     parser.add_argument("--loss_name", type=str, default='nll_loss', help='choose loss function corrlated to the optimization function')
 
     args = parser.parse_args()

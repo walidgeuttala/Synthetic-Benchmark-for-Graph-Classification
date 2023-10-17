@@ -267,3 +267,8 @@ def merge_dataframes(length, input_path):
     df = df * 100
     pd.set_option('display.float_format', '{:.2f}'.format)
     return df
+
+def update_args_with_dict(args, arg_dict):
+    for key, value in arg_dict.items():
+        if hasattr(args, key):
+            setattr(args, key, value)
