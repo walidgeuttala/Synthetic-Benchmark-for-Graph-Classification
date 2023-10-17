@@ -125,6 +125,7 @@ def test(model: torch.nn.Module, loader, device, args, trial, e, if_test):
             out, hidden_feat = model(batch_graphs)
             hidden_feat = hidden_feat.cpu().detach().numpy()
             list_hidden_output.append(hidden_feat)
+            print(hidden_feat.shape)
             del hidden_feat
         else:
             out, _ = model(batch_graphs)
