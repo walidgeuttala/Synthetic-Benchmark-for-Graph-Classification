@@ -247,7 +247,7 @@ class GNN(torch.nn.Module):
 
         
 
-        return getattr(F, self.output_activation)(pooled_h, dim=-1), torch.mean(pooled_hh, dim=0)
+        return getattr(F, self.output_activation)(pooled_h, dim=-1), pooled_hh
 
 class MLP(nn.Module):
     """Construct two-layer MLP-type aggreator for GIN model"""
@@ -279,9 +279,9 @@ class GIN(nn.Module):
         self.ginlayers = nn.ModuleList()
         self.batch_norms = nn.ModuleList()
         self.output_activation = output_activation
-        num_layers = 5
+        
         # five-layer GCN with two-layer MLP aggregator and sum-neighbor-pooling scheme
-        for layer in range(num_layers - 1):  # excluding the input layer
+        for layer in range(num_layers):  # excluding the input layer
             if layer == 0:
                 mlp = MLP(in_dim, hidden_dim, hidden_dim)
             else:
@@ -292,7 +292,7 @@ class GIN(nn.Module):
             self.batch_norms.append(nn.BatchNorm1d(hidden_dim))
         # linear functions for graph sum poolings of output of each layer
         self.linear_prediction = nn.ModuleList()
-        for layer in range(num_layers):
+        for layer in range(num_layers + 1):
             if layer == 0:
                 self.linear_prediction.append(nn.Linear(in_dim, out_dim))
             else:
@@ -313,10 +313,13 @@ class GIN(nn.Module):
             hidden_rep.append(h)
         score_over_layer = 0
         # perform graph sum pooling over all nodes in each layer
+        pooled_h_list = []
         for i, h in enumerate(hidden_rep):
             pooled_h = self.pool(g, h)
+            pooled_h_list.append(pooled_h)
             score_over_layer += self.drop(self.linear_prediction[i](pooled_h))
-        return  getattr(F, self.output_activation)(score_over_layer, dim=-1), score_over_layer
+
+        return  getattr(F, self.output_activation)(score_over_layer, dim=-1), torch.mean(torch.stack(pooled_h_list), dim=0)
 
 
 
