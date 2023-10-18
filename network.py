@@ -37,17 +37,13 @@ class SAGNetworkHierarchical(torch.nn.Module):
         num_layers=3,
         pool_ratio: float = 0.5,
         dropout: float = 0.0,
-        output_activation = 'log_softmax',
-        save_hidden_output_train = False,
-        save_hidden_output_test = False
+        output_activation = 'log_softmax'
     ):
         super(SAGNetworkHierarchical, self).__init__()
 
         self.dropout = dropout
         self.num_convpools = num_layers
         self.output_activation = output_activation
-        self.save_hidden_output_train = save_hidden_output_train
-        self.save_hidden_output_test = save_hidden_output_test
         convpools = []
         for i in range(num_layers):
             _i_dim = in_dim if i == 0 else hidden_dim
@@ -102,16 +98,12 @@ class SAGNetworkGlobal(torch.nn.Module):
         num_layers=3,
         pool_ratio: float = 0.5,
         dropout: float = 0.0,
-        output_activation = 'log_softmax',
-        save_hidden_output_train = False, 
-        save_hidden_output_test = False
+        output_activation = 'log_softmax'
     ):
         super(SAGNetworkGlobal, self).__init__()
         self.dropout = dropout
         self.num_layers = num_layers
         self.output_activation = output_activation
-        self.save_hidden_output_train = save_hidden_output_train
-        self.save_hidden_output_test = save_hidden_output_test
         convs = []
         for i in range(num_layers):
             _i_dim = in_dim if i == 0 else hidden_dim
@@ -181,8 +173,6 @@ class GNN(torch.nn.Module):
         pool_ratio: float = 0.5,
         dropout: float = 0.0,
         output_activation = 'log_softmax',
-        save_hidden_output_train = False, 
-        save_hidden_output_test = False
     ):
         """
         Initializes a new instance of the GNN class.
@@ -199,8 +189,6 @@ class GNN(torch.nn.Module):
         self.input_dim = in_dim
         self.output_dim = out_dim
         self.output_activation = output_activation
-        self.save_hidden_output_train = save_hidden_output_train
-        self.save_hidden_output_test = save_hidden_output_test
         self.ann_inupt_shape = num_layers * hidden_dim 
         # Create GNN layers
         for layer in range(num_layers):  # excluding the input layer
@@ -284,16 +272,12 @@ class GIN(nn.Module):
                  num_layers = 5, 
                  pool_ratio=0, 
                  dropout=0.5, 
-                 output_activation = 'log_softmax',
-                 save_hidden_output_train = False, 
-                 save_hidden_output_test = False):
+                 output_activation = 'log_softmax'):
     
         super().__init__()
         self.ginlayers = nn.ModuleList()
         self.batch_norms = nn.ModuleList()
         self.output_activation = output_activation
-        self.save_hidden_output_train = save_hidden_output_train
-        self.save_hidden_output_test = save_hidden_output_test
         num_layers = 5
         # five-layer GCN with two-layer MLP aggregator and sum-neighbor-pooling scheme
         for layer in range(num_layers - 1):  # excluding the input layer
