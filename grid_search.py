@@ -4,7 +4,7 @@ from copy import deepcopy
 import itertools
 from main import main, parse_args
 from utils import get_stats
-
+from utils import *
 
 # {
 #     "arch": ["hierarchical", "global"],
@@ -34,9 +34,6 @@ def run_experiments(args):
 
 def grid_search(config: dict):
     args = parse_args()
-    args.dataset = config['dataset']
-    config['dataset'] = [config['dataset']]
-    results = {}
     cnt = save_cnt = 0
     best_acc, err_bd = 0.0, 0.0
     best_args = vars(args)
@@ -45,7 +42,6 @@ def grid_search(config: dict):
     keys = list(config.keys())
     values = [config[key] for key in keys]
     combinations = list(itertools.product(*values))
-    config['dataset'] = config['dataset'][0]
     
     for combination in combinations:
         param_dict = dict(zip(keys, combination))
@@ -58,8 +54,6 @@ def grid_search(config: dict):
             err_bd = bd
             best_args = deepcopy(vars(args))
             save_cnt = cnt
-
-
                             
     args.output_path = "./output"
     if not os.path.exists(args.output_path):
