@@ -11,6 +11,8 @@ import re
 import numpy as np
 import math
 import pandas as pd
+import h5py
+from sklearn.decomposition import PCA
 
 def get_stats(
     array, conf_interval=False, name=None, stdout=False, logout=False
@@ -272,3 +274,35 @@ def update_args_with_dict(args, arg_dict):
     for key, value in arg_dict.items():
         if hasattr(args, key):
             setattr(args, key, value)
+
+
+def read_hidden_feat(folder_path):
+  # Specify the path to your HDF5 file
+  file_path = "/content/{}/save_hidden_output_test_trial0.h5".format(folder_path)
+
+  # Open the HDF5 file for reading
+  with h5py.File(file_path, 'r') as file:
+      # List all datasets in the file
+      dataset_names = list(file.keys())
+
+      # Iterate through all datasets and read them
+      for dataset_name in dataset_names:
+          data = file[dataset_name][:]
+  # Specify the number of components you want (2 in your case)
+  n_components = 2
+  print(data.shape)
+  # Perform PCA
+  pca = PCA(n_components=n_components)
+  reduced_data = pca.fit_transform(data)
+
+  # Inverse transform to get the reconstructed data
+  reconstructed_data = pca.inverse_transform(reduced_data)
+
+  # Calculate the reconstruction error
+  reconstruction_error = np.mean(np.square(data - reconstructed_data))
+
+  # Print the error
+  print(f"Reconstruction error: {reconstruction_error}")
+
+  # Print the shape of the reduced data
+  print(f"Reduced data shape: {reduced_data.shape}")  
