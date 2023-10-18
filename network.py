@@ -201,7 +201,7 @@ class GNN(torch.nn.Module):
         # Create linear prediction layers
         self.linear_prediction = torch.nn.ModuleList()
         for layer in range(num_layers):
-            _i_dim = in_dim if layer == 0 else hidden_dim
+            _i_dim = hidden_dim
             _o_dim = hidden_dim
             self.linear_prediction.append(torch.nn.Sequential(torch.nn.Linear(_i_dim, _o_dim),
                                         torch.nn.ReLU(),
