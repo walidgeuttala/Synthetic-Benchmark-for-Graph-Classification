@@ -32,7 +32,7 @@ def parse_args():
     parser.add_argument("--dropout", type=float, default=0.5, help="dropout ratio")
     parser.add_argument("--epochs", type=int, default=100, help="max number of training epochs")
     parser.add_argument("--patience", type=int, default=-1, help="patience for early stopping, -1 for no stop")
-    parser.add_argument("--device", type=int, default=0, help="device id, -1 for cpu")
+    parser.add_argument("--device", type=str, default="cuda", help="device cuda or cpu")
     parser.add_argument("--architecture",type=str,default="hierarchical",choices=["hierarchical", "global", "gnn", "gin"],help="model architecture",)
     parser.add_argument("--dataset_path", type=str, default="./data", help="path to dataset")
     parser.add_argument("--num_layers", type=int, default=3, help="number of conv layers")
