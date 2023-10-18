@@ -319,7 +319,7 @@ class GIN(nn.Module):
             pooled_h_list.append(pooled_h)
             score_over_layer += self.drop(self.linear_prediction[i](pooled_h))
 
-        return  getattr(F, self.output_activation)(score_over_layer, dim=-1), torch.mean(torch.stack(pooled_h_list), dim=0)
+        return  getattr(F, self.output_activation)(score_over_layer, dim=-1), torch.mean(torch.stack(pooled_h_list[1:]), dim=0)
 
 
 
