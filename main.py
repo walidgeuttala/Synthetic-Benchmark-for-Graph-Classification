@@ -191,9 +191,7 @@ def main(args, seed, save=True):
         num_layers=args.num_layers,
         pool_ratio=args.pool_ratio,
         dropout=args.dropout,
-        output_activation = args.output_activation,
-        save_hidden_output_train = args.save_hidden_output_train,
-        save_hidden_output_test = args.save_hidden_output_test
+        output_activation = args.output_activation
     ).to(device)
     args.num_feature = int(num_feature)
     args.num_classes = int(num_classes)
