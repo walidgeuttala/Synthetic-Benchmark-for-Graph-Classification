@@ -39,6 +39,7 @@ def parse_args():
     parser.add_argument("--print_every",type=int,default=10,help="print train log every k epochs, -1 for silent training",)
     parser.add_argument("--num_trials", type=int, default=1, help="number of trials")
     parser.add_argument("--output_path", type=str, default="./output")
+    parser.add_argument("--output", type=str, default="./output")
     parser.add_argument("--k", type=int, default="4", help="for ID-GNN where control the depth of the generated ID features for helping detecting cycles of length k-1 or less")
     parser.add_argument("--output_activation", type=str, default="log_softmax", help="output_activation function")
     parser.add_argument("--optimizer_name", type=str, default="Adam", help="optimizer type default adam")
@@ -46,7 +47,6 @@ def parse_args():
     parser.add_argument("--save_hidden_output_test", type=bool, default=False, help="saving the output before output_activation applied for the model testing/validation")
     parser.add_argument("--save_last_epoch_hidden_output", type=bool, default=False, help="saving the last epoch hidden output only if it is false that means save for all epochs this applied to train and test if they are True")
     parser.add_argument("--loss_name", type=str, default='nll_loss', help='choose loss function corrlated to the optimization function')
-
     args = parser.parse_args()
 
     # device
