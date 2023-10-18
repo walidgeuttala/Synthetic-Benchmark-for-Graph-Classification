@@ -20,7 +20,7 @@ from test_stanford_networks import test_networks
 import h5py
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="GNN for network classification")
+    parser = argparse.ArgumentParser(description="GNN for network classification", allow_abbrev=False)
     parser.add_argument("--dataset", type=str, default="dataset", help="just naming of the data added to the info after training the model")
     parser.add_argument("--plot_statistics", type=bool, default=False, help="do plots about acc/loss/boxplot")
     parser.add_argument("--feat_type", type=str, default="ones_feat", choices=["ones_feat", "noise_feat", "degree_feat", "identity_feat"], help="ones_feat/noies_feat/degree_feat/identity_feat")
@@ -47,7 +47,7 @@ def parse_args():
     parser.add_argument("--save_hidden_output_test", type=bool, default=False, help="saving the output before output_activation applied for the model testing/validation")
     parser.add_argument("--save_last_epoch_hidden_output", type=bool, default=False, help="saving the last epoch hidden output only if it is false that means save for all epochs this applied to train and test if they are True")
     parser.add_argument("--loss_name", type=str, default='nll_loss', help='choose loss function corrlated to the optimization function')
-    args = parser.parse_args()
+    args, _ = parser.parse_known_args()
 
     # device
     args.device = "cpu" if args.device == -1 else "cuda"
