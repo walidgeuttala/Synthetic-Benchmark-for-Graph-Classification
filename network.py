@@ -189,7 +189,7 @@ class GNN(torch.nn.Module):
         self.input_dim = in_dim
         self.output_dim = out_dim
         self.output_activation = output_activation
-        self.ann_inupt_shape = num_layers * hidden_dim 
+        self.ann_input_shape = num_layers * hidden_dim 
         # Create GNN layers
         for layer in range(num_layers):  # excluding the input layer
             if layer == 0:
@@ -201,16 +201,19 @@ class GNN(torch.nn.Module):
         # Create linear prediction layers
         self.linear_prediction = torch.nn.ModuleList()
         for layer in range(num_layers):
-            _i_dim = self.ann_inupt_shape if layer == 0 else hidden_dim
+            _i_dim = in_dim if layer == 0 else hidden_dim
             _o_dim = hidden_dim
             self.linear_prediction.append(torch.nn.Sequential(torch.nn.Linear(_i_dim, _o_dim),
                                         torch.nn.ReLU(),
                                         torch.nn.BatchNorm1d(_o_dim)))
-        
+        self.before_last_linear = torch.nn.Sequential(torch.nn.Linear(self.ann_input_shape, hidden_dim),
+                                        torch.nn.ReLU(),
+                                        torch.nn.BatchNorm1d(hidden_dim))
+        self.last_linear = torch.nn.Sequential(torch.nn.Linear(hidden_dim, out_dim),
+                                        torch.nn.ReLU(),
+                                        torch.nn.BatchNorm1d(out_dim))
         # Create sum pooling module
         self.pool = SumPooling()
-
-        self.weights = np.arange(0.3, num_layers-1, 0.3, dtype=float)
 
     def forward(self, graph: dgl.DGLGraph):
         """
@@ -234,15 +237,13 @@ class GNN(torch.nn.Module):
             hidden_rep.append(feat)
         
         # Perform graph sum pooling over all nodes in each layer and weight for every representation
-        output = 0
         pooled_h = []
         for i, h in enumerate(hidden_rep):
             pooled_h.append(self.linear_prediction[i](self.pool(graph, h)))
         
-        pooled_hh = torch.stack(pooled_h, dim=0)
         pooled_h = torch.cat(pooled_h, dim=-1)
-        for i in range(self.num_layers):
-            pooled_h = self.linear_prediction[i](pooled_h)
+        pooled_hh = self.before_last_linear(pooled_h)
+        pooled_h = self.last_linear(pooled_hh)
 
         
 

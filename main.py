@@ -48,8 +48,6 @@ def parse_args():
     parser.add_argument("--loss_name", type=str, default='nll_loss', help='choose loss function corrlated to the optimization function')
     args, _ = parser.parse_known_args()
 
-    # device
-    args.device = "cpu" if args.device == -1 else "cuda"
     if not torch.cuda.is_available():
         logging.warning("CUDA is not available, use CPU for training.")
         args.device = "cpu"
