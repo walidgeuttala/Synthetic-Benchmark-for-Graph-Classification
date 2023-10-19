@@ -322,3 +322,13 @@ def apply_t_sne(data, n_components):
     data = tsne.fit_transform(data)
 
     return data
+
+def min_max_norm(tensor):
+    # Calculate the minimum and maximum values along each feature
+    min_values, _ = tensor.min(dim=0)
+    max_values, _ = tensor.max(dim=0)
+
+    # Perform Min-Max scaling
+    normalized_tensor = (tensor - min_values) / (max_values - min_values)
+
+    return normalized_tensor
