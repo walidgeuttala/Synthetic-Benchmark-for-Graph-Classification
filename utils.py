@@ -16,6 +16,7 @@ from sklearn.decomposition import KernelPCA, PCA
 from sklearn.manifold import TSNE
 from sklearn.metrics import mean_squared_error
 from data_plots import *
+from itertools import combinations
 
 def get_stats(
     array, conf_interval=False, name=None, stdout=False, logout=False
@@ -334,6 +335,23 @@ def min_max_norm(tensor):
 
     return normalized_tensor
 
+def min_max_normalize(column):
+    min_val = column.min()
+    max_val = column.max()
+    return (column - min_val) / (max_val - min_val)
+
+def min_max_normalize(column):
+    min_val = column.min()
+    max_val = column.max()
+    return (column - min_val) / (max_val - min_val)
+
+from utils import *
+from itertools import combinations
+def min_max_normalize(column):
+    min_val = column.min()
+    max_val = column.max()
+    return (column - min_val) / (max_val - min_val)
+
 def func(data_path, output_path, number_samples_for_type_graph):
     output_path = 'output1'
     data1 = torch.tensor(read_hidden_feat(output_path, 2, 'pca'))
@@ -359,3 +377,11 @@ def func(data_path, output_path, number_samples_for_type_graph):
             df = df1[name]
         else:
             df = pd.concat([df, df1[name]], ignore_index=True)
+    df = df.apply(min_max_normalize)
+    n = df.shape[1]  # Change this to your desired 'n'
+
+    combinations_list = list(combinations(range(n), 2))
+    for i in combinations_list:
+        #print(i)
+        print(df.iloc[:, list(i)])
+    print(df)
