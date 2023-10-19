@@ -334,7 +334,6 @@ def min_max_norm(tensor):
 
     return normalized_tensor
 
-
 def func(data_path, output_path, number_samples_for_type_graph):
     output_path = 'output1'
     data1 = torch.tensor(read_hidden_feat(output_path, 2, 'pca'))
