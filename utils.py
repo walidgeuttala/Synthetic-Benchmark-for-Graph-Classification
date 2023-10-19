@@ -339,22 +339,26 @@ def min_max_normalize(column):
     max_val = column.max()
     return (column - min_val) / (max_val - min_val)
 
-def comparing_hidden_feat(data_path, output_path, number_samples_for_type_graph):
+def comparing_hidden_feat(data_path, output_path, number_samples_for_type_graph, type_dim_red):
     output_path = 'output1'
-    data1 = torch.tensor(read_hidden_feat(output_path, 2, 'pca'))
-    data2 = torch.tensor(read_hidden_feat(output_path, 2, 'kernel_pca'))
-    data3 = torch.tensor(read_hidden_feat(output_path, 2, 't-sne'))
+    if type_dim_red == 0:
+        data = torch.tensor(read_hidden_feat(output_path, 'pca', 2))
+    elif type_dim_red == 1:
+        data = torch.tensor(read_hidden_feat(output_path, 'kernel_pca', 2))
+    else:
+        data = torch.tensor(read_hidden_feat(output_path, 't-sne', 2))
 
-    data1 = min_max_norm(data1)
-    data2 = min_max_norm(data2)
-    data3 = min_max_norm(data3)
+    data = min_max_norm(data)
 
     indices = torch.load('{}/test_indices.pt'.format(output_path))
     classes = (indices/number_samples_for_type_graph).floor().to(torch.int64)
 
-    scatter_plot_classes(data1, classes, 'PCA')
-    scatter_plot_classes(data2, classes, 'Kernel_PCA')
-    scatter_plot_classes(data3, classes, 'T-SNE')
+    if type_dim_red == 0:
+        scatter_plot_classes(data, classes, 'PCA')
+    elif type_dim_red == 1:
+        scatter_plot_classes(data, classes, 'Kernel_PCA')
+    else:
+        scatter_plot_classes(data, classes, 'T-SNE')
 
     df1 = pd.read_csv('./{}/info_about_graphs.csv'.format(data_path), header=[0, 1])
     networks_names = df1.columns.get_level_values(0).unique()
@@ -364,14 +368,20 @@ def comparing_hidden_feat(data_path, output_path, number_samples_for_type_graph)
             df = df1[name]
         else:
             df = pd.concat([df, df1[name]], ignore_index=True)
+
     df = df.apply(min_max_normalize)
     n = df.shape[1]  # Change this to your desired 'n'
 
     combinations_list = list(combinations(range(n), 2))
+    for i in range(n):
+        combinations_list.insert(i, (i, i))
+
+    scatter_plot_classes(data, classes, title="Scatter Plot for classes")
+
     for i in combinations_list:
-        #print(i)
-        print(df.iloc[:, list(i)])
-    print(df)
+        array = min_max_norm(torch.tensor(df.iloc[indices, list(i)].values))
+        scatter_plot_classes_given_feat(data, array, classes, title="Scatter Plot ({}, {}) where circle is hidden_feat and triangle is the properties".format(df.iloc[:, i[0]].name, df.iloc[:, i[1]].name), name_feat1=df.iloc[:, i[0]].name, name_feat2=df.iloc[:, i[1]].name)
+        
 
 
 def scatter_plot_classes(X, y, title="Scatter Plot", name_feat1='Feature 1', name_feat2='Feature 2'):
