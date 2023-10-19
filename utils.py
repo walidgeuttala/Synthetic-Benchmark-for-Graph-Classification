@@ -340,7 +340,7 @@ def min_max_normalize(column):
     return (column - min_val) / (max_val - min_val)
 
 def comparing_hidden_feat(data_path, output_path, number_samples_for_type_graph, type_dim_red):
-
+    names_methods = ['PCA', 'Kernel_PCA', 'T-SNE']
     if type_dim_red == 0:
         data = torch.tensor(read_hidden_feat(output_path, 'pca', 2))
     elif type_dim_red == 1:
@@ -353,12 +353,14 @@ def comparing_hidden_feat(data_path, output_path, number_samples_for_type_graph,
     indices = torch.load('{}/test_indices.pt'.format(output_path))
     classes = (indices/number_samples_for_type_graph).floor().to(torch.int64)
 
-    if type_dim_red == 0:
-        scatter_plot_classes(data, classes, 'PCA')
-    elif type_dim_red == 1:
-        scatter_plot_classes(data, classes, 'Kernel_PCA')
-    else:
-        scatter_plot_classes(data, classes, 'T-SNE')
+    output_path = output_path + '/analysis_plots'
+    if not os.path.exists(output_path):
+        os.mkdir(output_path)
+    output_path = output_path + '/{}'.format(names_methods[type_dim_red])
+    if not os.path.exists(output_path):
+        os.mkdir(output_path)
+
+    scatter_plot_classes(data, classes, output_path, '{} Scatter Plot for classes'.format(names_methods[type_dim_red]))    
 
     df1 = pd.read_csv('./{}/info_about_graphs.csv'.format(data_path), header=[0, 1])
     networks_names = df1.columns.get_level_values(0).unique()
@@ -376,17 +378,13 @@ def comparing_hidden_feat(data_path, output_path, number_samples_for_type_graph,
     for i in range(n):
         combinations_list.insert(i, (i, i))
 
-    output_path = output_path + '/analysis_plots'
-    if not os.path.exists(output_path):
-        os.mkdir(output_path)
         
-    scatter_plot_classes(data, classes, output_path, title="Scatter Plot for classes")
 
     for i in combinations_list:
         array = min_max_norm(torch.tensor(df.iloc[indices, list(i)].values))
 
-        scatter_plot_classes_given_feat(data, array, classes, output_path, title="Scatter Plot ({}, {}) where circle is hidden_feat and triangle is the properties"
-        .format(df.iloc[:, i[0]].name, df.iloc[:, i[1]].name), name_feat1=df.iloc[:, i[0]].name, name_feat2=df.iloc[:, i[1]].name)
+        scatter_plot_classes_given_feat(data, array, classes, output_path, title="{} Scatter Plot ({}, {}) where circle is hidden_feat and triangle is the properties"
+        .format(names_methods[type_dim_red], df.iloc[:, i[0]].name, df.iloc[:, i[1]].name), name_feat1=df.iloc[:, i[0]].name, name_feat2=df.iloc[:, i[1]].name)
 
 def scatter_plot_classes(X, y, output_path, title="Scatter Plot", name_feat1='Feature 1', name_feat2='Feature 2'):
     plt.figure(figsize=(14, 10))
