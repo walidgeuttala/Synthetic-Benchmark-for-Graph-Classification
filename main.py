@@ -161,6 +161,10 @@ def main(args, seed, save=True):
     
     generator = torch.Generator().manual_seed(42)
     train_set, val_set, test_set = random_split(dataset, [num_training, num_val, num_test], generator=generator)
+    
+    # save test indices
+    indices = torch.tensor(test_set.indices)
+    torch.save(indices, '{}/test_indices.pt'.formt(args.output_path))
 
     #train_set, val_set, test_set = dgl.data.utils.split_dataset(dataset, frac_list=[0.8, 0.1, 0.1], shuffle=True, random_state=seed)
     
