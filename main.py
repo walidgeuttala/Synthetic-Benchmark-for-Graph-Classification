@@ -164,7 +164,7 @@ def main(args, seed, save=True):
     
     # save test indices
     indices = torch.tensor(test_set.indices)
-    torch.save(indices, '{}/test_indices.pt'.formt(args.output_path))
+    torch.save(indices, '{}/test_indices.pt'.format(args.output_path))
 
     #train_set, val_set, test_set = dgl.data.utils.split_dataset(dataset, frac_list=[0.8, 0.1, 0.1], shuffle=True, random_state=seed)
     

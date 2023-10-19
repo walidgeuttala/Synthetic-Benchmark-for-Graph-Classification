@@ -248,6 +248,30 @@ def avg_shortest_path_boxplot(df, avg_shortest_path, length, args):
     plt.savefig('{}/Boxplot for each column avg_shortest_path.png'.format(args.dataset_path))
     plt.show()
 
+def scatter_plot_classes(X, y, title="Scatter Plot", name_feat1='Feature 1', name_feat2='Feature 2'):
+    plt.figure(figsize=(14, 10))
+    
+    # Determine the unique class labels
+    unique_classes = torch.unique(y)
+
+    # Create a color map with a sufficient number of distinct colors
+    num_colors = max(unique_classes) + 1  # Maximum class label + 1
+    colors = plt.cm.viridis(torch.linspace(0, 1, num_colors))
+
+    # Create a scatter plot
+    for class_label in unique_classes:
+        mask = (y == class_label)
+        plt.scatter(X[mask, 0], X[mask, 1], color=colors[class_label], label=f'Class {class_label}')
+
+    # Add labels and legend
+    plt.xlabel(name_feat1)
+    plt.ylabel(name_feat2)
+    plt.legend()
+    plt.title(title)
+
+    # Show the plot
+    plt.show()
+
 if __name__ == "__main__":
     args = parse_args()
     names2 = args.types.split(',')
