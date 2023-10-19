@@ -8,7 +8,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import argparse
 import json
-import matplotlib.pyplot as plt
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Dataset plot statistics")
