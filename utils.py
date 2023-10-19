@@ -15,6 +15,7 @@ import h5py
 from sklearn.decomposition import KernelPCA, PCA 
 from sklearn.manifold import TSNE
 from sklearn.metrics import mean_squared_error
+from data_plots import *
 
 def get_stats(
     array, conf_interval=False, name=None, stdout=False, logout=False
@@ -332,3 +333,30 @@ def min_max_norm(tensor):
     normalized_tensor = (tensor - min_values) / (max_values - min_values)
 
     return normalized_tensor
+
+
+def func(data_path, output_path, number_samples_for_type_graph):
+    output_path = 'output1'
+    data1 = torch.tensor(read_hidden_feat(output_path, 2, 'pca'))
+    data2 = torch.tensor(read_hidden_feat(output_path, 2, 'kernel_pca'))
+    data3 = torch.tensor(read_hidden_feat(output_path, 2, 't-sne'))
+
+    data1 = min_max_norm(data1)
+    data2 = min_max_norm(data2)
+    data3 = min_max_norm(data3)
+
+    indices = torch.load('{}/test_indices.pt'.format(output_path))
+    classes = (indices/number_samples_for_type_graph).floor().to(torch.int64)
+
+    scatter_plot_classes(data1, classes, 'PCA')
+    scatter_plot_classes(data2, classes, 'Kernel_PCA')
+    scatter_plot_classes(data3, classes, 'T-SNE')
+
+    df1 = pd.read_csv('./{}/info_about_graphs.csv'.format(data_path), header=[0, 1])
+    networks_names = df1.columns.get_level_values(0).unique()
+    df = pd.DataFrame()
+    for name in networks_names:
+        if df.empty:
+            df = df1[name]
+        else:
+            df = pd.concat([df, df1[name]], ignore_index=True)
