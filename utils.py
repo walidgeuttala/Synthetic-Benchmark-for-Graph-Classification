@@ -339,19 +339,7 @@ def min_max_normalize(column):
     max_val = column.max()
     return (column - min_val) / (max_val - min_val)
 
-def min_max_normalize(column):
-    min_val = column.min()
-    max_val = column.max()
-    return (column - min_val) / (max_val - min_val)
-
-from utils import *
-from itertools import combinations
-def min_max_normalize(column):
-    min_val = column.min()
-    max_val = column.max()
-    return (column - min_val) / (max_val - min_val)
-
-def func(data_path, output_path, number_samples_for_type_graph):
+def comparing_hidden_feat(data_path, output_path, number_samples_for_type_graph):
     output_path = 'output1'
     data1 = torch.tensor(read_hidden_feat(output_path, 2, 'pca'))
     data2 = torch.tensor(read_hidden_feat(output_path, 2, 'kernel_pca'))
