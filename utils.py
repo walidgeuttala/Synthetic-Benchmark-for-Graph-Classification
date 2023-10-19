@@ -340,7 +340,7 @@ def min_max_normalize(column):
     return (column - min_val) / (max_val - min_val)
 
 def comparing_hidden_feat(data_path, output_path, number_samples_for_type_graph, type_dim_red):
-    output_path = 'output1'
+
     if type_dim_red == 0:
         data = torch.tensor(read_hidden_feat(output_path, 'pca', 2))
     elif type_dim_red == 1:
@@ -376,15 +376,19 @@ def comparing_hidden_feat(data_path, output_path, number_samples_for_type_graph,
     for i in range(n):
         combinations_list.insert(i, (i, i))
 
-    scatter_plot_classes(data, classes, title="Scatter Plot for classes")
+    output_path = output_path + '/analysis_plots'
+    if not os.path.exists(output_path):
+        os.mkdir(output_path)
+        
+    scatter_plot_classes(data, classes, title="Scatter Plot for classes", output_path)
 
     for i in combinations_list:
         array = min_max_norm(torch.tensor(df.iloc[indices, list(i)].values))
-        scatter_plot_classes_given_feat(data, array, classes, title="Scatter Plot ({}, {}) where circle is hidden_feat and triangle is the properties".format(df.iloc[:, i[0]].name, df.iloc[:, i[1]].name), name_feat1=df.iloc[:, i[0]].name, name_feat2=df.iloc[:, i[1]].name)
-        
 
+        scatter_plot_classes_given_feat(data, array, classes, title="Scatter Plot ({}, {}) where circle is hidden_feat and triangle is the properties"
+        .format(df.iloc[:, i[0]].name, df.iloc[:, i[1]].name), name_feat1=df.iloc[:, i[0]].name, name_feat2=df.iloc[:, i[1]].name, output_path)
 
-def scatter_plot_classes(X, y, title="Scatter Plot", name_feat1='Feature 1', name_feat2='Feature 2'):
+def scatter_plot_classes(X, y, output_path, title="Scatter Plot", name_feat1='Feature 1', name_feat2='Feature 2'):
     plt.figure(figsize=(14, 10))
     
     # Determine the unique class labels
@@ -406,9 +410,10 @@ def scatter_plot_classes(X, y, title="Scatter Plot", name_feat1='Feature 1', nam
     plt.title(title)
 
     # Show the plot
+    plt.savefig('{}/{}.png'.format(output_path, title))
     plt.show()
 
-def scatter_plot_classes_given_feat(X1, X2, y, title="Scatter Plot", name_feat1='Feature 1', name_feat2='Feature 2'):
+def scatter_plot_classes_given_feat(X1, X2, y, output_path, title="Scatter Plot", name_feat1='Feature 1', name_feat2='Feature 2'):
     plt.figure(figsize=(14, 10))
     
     # Determine the unique class labels
@@ -430,4 +435,5 @@ def scatter_plot_classes_given_feat(X1, X2, y, title="Scatter Plot", name_feat1=
     plt.title(title)
 
     # Show the plot
+    plt.savefig('{}/{}.png'.format(output_path, title))
     plt.show()
