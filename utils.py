@@ -281,7 +281,7 @@ def update_args_with_dict(args, arg_dict):
 
 def read_hidden_feat(folder_path, method='pca', n_components=2):
     # Specify the path to your HDF5 file
-    file_path = "/content/{}/save_hidden_output_test_trial0.h5".format(folder_path)
+    file_path = "{}/save_hidden_output_test_trial0.h5".format(folder_path)
     # Open the HDF5 file for reading
     with h5py.File(file_path, 'r') as file:
         # List all datasets in the file
