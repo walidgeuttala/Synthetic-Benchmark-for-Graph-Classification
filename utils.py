@@ -201,11 +201,13 @@ def find(str2):
 
 def calculate_avg_shortest_path(graph):
     matrix = dgl.shortest_dist(graph)
+    matrix[matrix == -1] = 0
     # Get the dimensions of the matrix
     rows, cols = matrix.size()
     # Create a mask for the upper half (above the diagonal)
     mask = torch.triu(torch.ones(rows, cols, dtype=torch.uint8), diagonal=1)
     # Calculate the sum of elements in the upper half
+    mask[matrix == 0] = 0
     sum_upper_half = torch.sum(matrix * mask)
     # Calculate the number of elements in the upper half
     count = torch.sum(mask)
