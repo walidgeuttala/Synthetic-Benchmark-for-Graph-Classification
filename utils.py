@@ -383,7 +383,7 @@ def comparing_hidden_feat(data_path, output_path, number_samples_for_type_graph,
         
 
     for i in combinations_list:
-        array = min_max_norm(torch.tensor(df.iloc[indices, list(i)].values))
+        array = min_max_norm(torch.tensor(df.iloc[indices.tolist(), list(i)].values))
 
         scatter_plot_classes_given_feat(data, array, classes, output_path, title="{} Scatter Plot ({}, {}) where circle is hidden_feat and triangle is the properties"
         .format(names_methods[type_dim_red], df.iloc[:, i[0]].name, df.iloc[:, i[1]].name), name_feat1=df.iloc[:, i[0]].name, name_feat2=df.iloc[:, i[1]].name)
