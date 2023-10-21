@@ -456,3 +456,23 @@ def network_metrics():
     combined_df.rename(columns=list(df_mean.index.get_level_values(1).unique()))
     df = pd.DataFrame(combined_df.values,index=combined_df.index, columns= list(df_min.index.get_level_values(1).unique()))
     return df
+
+
+def merge_stanfrod_prediction_and_properties():
+    df1 = pd.read_csv('stanford_output.csv')
+    for col in df1.columns:
+        if df1[col].dtype == 'float64':
+            df1[col] = df1[col].round(2)
+
+    df = pd.read_csv('metrics_of_stanford_networks.csv')
+
+    for col in df.columns:
+        if df[col].dtype == 'float64':
+            df[col] = df[col].round(2)
+
+
+    # Merge the DataFrames based on the specified columns
+    result = pd.merge(df1, df, left_on='network_name', right_on='Name', how='inner')
+    result.to_csv('stanfrod_prediction_with_properites.csv', index=False)
+
+    return result
