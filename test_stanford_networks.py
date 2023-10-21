@@ -54,9 +54,13 @@ def parse_args():
 def stanford_degree_dist_plots(draw = True):
     # Open the file in read mode
     names = []
+    nodes = []
+    edges = []
     density = []
     transitivity = []
+    trans_dens = []
     avg_short_path = []
+    avg_degree = []
     with open('links.txt', 'r') as file:
         # Iterate over each line in the file
         f = 0
@@ -76,12 +80,15 @@ def stanford_degree_dist_plots(draw = True):
                     names.append(name[:-7])
                     density.append(nx.density(graph))
                     transitivity.append(nx.transitivity(graph))
-                    
+                    nodes.append(graph.number_of_nodes())
+                    edges.append(graph.number_of_edges())
+                    trans_dens.append(transitivity[-1]/density[-1])
+                    avg_degree.append(edges[-1]*2/nodes[-1])
                     if draw == True:
                         print("network name : "+names[-1])
                         print()
-                        print('number of nodes : ',graph.number_of_nodes())
-                        print('nuler of edges : ', graph.number_of_edges())
+                        print('number of nodes : ',nodes[-1])
+                        print('nuler of edges : ', edges[-1])
                         print('average_shortest_path', avg_short_path[-1])
                         print("transitivity : ",transitivity[-1])
                         print("density : ",density[-1])
@@ -93,6 +100,21 @@ def stanford_degree_dist_plots(draw = True):
                         plt.ylabel("Frequency")
                         plt.title("Degree Distribution")
                         plt.show()
+
+    data = {
+    "Name": names,
+    "Nodes": nodes,
+    "Edges": edges,
+    "Density": density,
+    "Transitivity": transitivity,
+    "Transitivity Density": trans_dens,
+    "Average Shortest Path": avg_short_path,
+    "Average Degree": avg_degree
+    }
+    df = pd.DataFrame(data)
+    df.to_csv('metrics_of_stanford_networks.csv', index=False)  
+
+    
     return names, density, transitivity, avg_short_path     
 
 

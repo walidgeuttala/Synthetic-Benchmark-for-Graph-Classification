@@ -435,3 +435,22 @@ def scatter_plot_classes_given_feat(X1, X2, y, output_path, title="Scatter Plot"
     # Show the plot
     plt.savefig('{}/{}.png'.format(output_path, title))
     plt.show()
+
+def network_metrics():
+    df = pd.read_csv('/content/data/info_about_graphs.csv', header=[0, 1])
+    df_min = df.min().round(2)
+    df_mean = df.mean().round(2)
+    df_mean = df.max().round(2)
+    combined_df = pd.concat([df_min, df_mean, df_mean], axis=1, keys=['Min', 'Mean', 'Max'], )
+
+    # Transpose the DataFrame to have the desired structure
+    combined_df = combined_df.transpose()
+    print(combined_df)
+    # Reset the index to include the dataset names
+    combined_df = combined_df.rename_axis(['Dataset', 'Metric'])
+
+    # Sort the index for a cleaner presentation
+    combined_df = combined_df.sort_index()
+    combined_df.rename(columns=list(df_mean.index.get_level_values(1).unique()))
+    df = pd.DataFrame(combined_df.values,index=combined_df.index, columns= list(df_min.index.get_level_values(1).unique()))
+    return df
