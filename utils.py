@@ -430,7 +430,7 @@ def comparing_hidden_feat2(data_path, output_path, number_samples_for_type_graph
 
         
 
-    for i in n:
+    for i in range(n):
         array = df.iloc[indices.tolist(), i].values
 
         scatter_plot_classes_given_feat2(data, array, classes, output_path, title="{} Scatter Plot of the hidden features down sampled into 2 dim, and the heatmap coloring represnting the {}"
@@ -441,7 +441,8 @@ def scatter_plot_classes_given_feat2(X1, X2, y, output_path, title="Scatter Plot
     
     # Create a colormap for X2
     colormap = plt.cm.get_cmap('viridis', 8)  # Use 'viridis' colormap with 8 colors
-
+    unique_classes = torch.unique(y)
+    
     # Create a scatter plot with heatmap coloring and marker styles
     for i in range(8):
         mask = X2 == i  # Filter data points for each unique value in X2
