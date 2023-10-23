@@ -449,7 +449,7 @@ def scatter_plot_classes_given_feat2(X1, X2, y, output_path, title="Scatter Plot
         x = X1[mask][:, 0]
         y_values = X1[mask][:, 1]
         c = colormap(i / 7)  # Map X2 values to colors using the colormap
-        marker = y[mask][0]  # Assign marker style based on the first value of y within the class
+        marker = y[mask]  # Assign marker style based on the first value of y within the class
 
         plt.scatter(x, y_values, c=[c], label=f'X2={unique_classes[i]}', marker=marker)
 
