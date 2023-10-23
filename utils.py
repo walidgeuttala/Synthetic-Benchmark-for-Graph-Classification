@@ -388,7 +388,87 @@ def comparing_hidden_feat(data_path, output_path, number_samples_for_type_graph,
         scatter_plot_classes_given_feat(data, array, classes, output_path, title="{} Scatter Plot ({}, {}) where circle is hidden_feat and triangle is the properties"
         .format(names_methods[type_dim_red], df.iloc[:, i[0]].name, df.iloc[:, i[1]].name), name_feat1=df.iloc[:, i[0]].name, name_feat2=df.iloc[:, i[1]].name)
 
-def scatter_plot_classes(X, y, output_path, title="Scatter Plot", name_feat1='Feature 1', name_feat2='Feature 2'):
+
+
+def comparing_hidden_feat2(data_path, output_path, number_samples_for_type_graph, type_dim_red):
+    names_methods = ['PCA', 'Kernel_PCA', 'T-SNE']
+    if type_dim_red == 0:
+        data = torch.tensor(read_hidden_feat(output_path, 'pca', 2))
+    elif type_dim_red == 1:
+        data = torch.tensor(read_hidden_feat(output_path, 'kernel_pca', 2))
+    else:
+        data = torch.tensor(read_hidden_feat(output_path, 't-sne', 2))
+
+    data = min_max_norm(data)
+
+    indices = torch.load('{}/test_indices.pt'.format(output_path))
+    classes = (indices/number_samples_for_type_graph).floor().to(torch.int64)
+
+    output_path = output_path + '/analysis_plots'
+    if not os.path.exists(output_path):
+        os.mkdir(output_path)
+    output_path = output_path + '/{}'.format(names_methods[type_dim_red])
+    if not os.path.exists(output_path):
+        os.mkdir(output_path)
+
+    scatter_plot_classes(data, classes, output_path, '{} Scatter Plot for classes'.format(names_methods[type_dim_red]))    
+
+    df1 = pd.read_csv('./{}/info_about_graphs.csv'.format(data_path), header=[0, 1])
+    networks_names = df1.columns.get_level_values(0).unique()
+    df = pd.DataFrame()
+    for name in networks_names:
+        if df.empty:
+            df = df1[name]
+        else:
+            df = pd.concat([df, df1[name]], ignore_index=True)
+
+    n = df.shape[1]  
+
+    combinations_list = list(combinations(range(n), 2))
+    for i in range(n):
+        combinations_list.insert(i, (i, i))
+
+        
+
+    for i in n:
+        array = df.iloc[indices.tolist(), i].values
+
+        scatter_plot_classes_given_feat2(data, array, classes, output_path, title="{} Scatter Plot of the hidden features down sampled into 2 dim, and the heatmap coloring represnting the {}"
+        .format(names_methods[type_dim_red], df.iloc[:, i].name))
+
+def scatter_plot_classes_given_feat2(X1, X2, y, output_path, title="Scatter Plot"):
+    plt.figure(figsize=(14, 10))
+    
+    # Create a colormap for X2
+    colormap = plt.cm.get_cmap('viridis', 8)  # Use 'viridis' colormap with 8 colors
+
+    # Create a scatter plot with heatmap coloring and marker styles
+    for i in range(8):
+        mask = X2 == i  # Filter data points for each unique value in X2
+        x = X1[mask][:, 0]
+        y_values = X1[mask][:, 1]
+        c = colormap(i / 7)  # Map X2 values to colors using the colormap
+        marker = y[mask][0]  # Assign marker style based on the first value of y within the class
+
+        plt.scatter(x, y_values, c=[c], label=f'X2={unique_classes[i]}', marker=marker)
+
+    # Add colorbar for the heatmap
+    sm = plt.cm.ScalarMappable(cmap=colormap)
+    sm.set_array([])  # An empty array is required for the colorbar to work
+    cbar = plt.colorbar(sm, ticks=np.linspace(0, 7, 8))
+    cbar.set_label('X2 Value')
+
+    # Add labels and legend
+    plt.xlabel('Hidden_Feat1')
+    plt.ylabel('Hidden_Feat2')
+    plt.legend()
+
+    plt.title(title)
+
+    plt.savefig('{}/{}.png'.format(output_path, title))
+    plt.show()
+
+def scatter_plot_classes(X, y, output_path, title="Scatter Plot", name_feat1='Hidden_Feat1', name_feat2='Hidden_Feat2'):
     plt.figure(figsize=(14, 10))
     
     # Determine the unique class labels
