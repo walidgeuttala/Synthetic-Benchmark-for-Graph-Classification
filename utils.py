@@ -387,6 +387,7 @@ def comparing_hidden_feat(data_path, output_path, number_samples_for_type_graph,
 
         scatter_plot_classes_given_feat(data, array, classes, output_path, title="{} Scatter Plot ({}, {}) where circle is hidden_feat and triangle is the properties"
         .format(names_methods[type_dim_red], df.iloc[:, i[0]].name, df.iloc[:, i[1]].name), name_feat1=df.iloc[:, i[0]].name, name_feat2=df.iloc[:, i[1]].name)
+
 def comparing_hidden_feat2(data_path, output_path, number_samples_for_type_graph, type_dim_red):
     names_methods = ['PCA', 'Kernel_PCA', 'T-SNE']
     if type_dim_red == 0:
@@ -408,7 +409,6 @@ def comparing_hidden_feat2(data_path, output_path, number_samples_for_type_graph
     if not os.path.exists(output_path):
         os.mkdir(output_path)
 
-
     df1 = pd.read_csv('./{}/info_about_graphs.csv'.format(data_path), header=[0, 1])
     networks_names = df1.columns.get_level_values(0).unique()
     df = pd.DataFrame()
@@ -421,7 +421,7 @@ def comparing_hidden_feat2(data_path, output_path, number_samples_for_type_graph
     n = df.shape[1] 
     networks_names = df1.columns.get_level_values(0).unique()
     scatter_plot_classes(data, classes, output_path,networks_names, '{} Scatter Plot for classes'.format(names_methods[type_dim_red]))    
-
+    
 
     for i in range(n):
         array = df.iloc[indices.tolist(), i].values
@@ -520,7 +520,7 @@ def scatter_plot_classes_given_feat(X1, X2, y, output_path, title="Scatter Plot"
     plt.show()
 
 def network_metrics():
-    df = pd.read_csv('/content/data/info_about_graphs.csv', header=[0, 1])
+    df = pd.read_csv('/data/info_about_graphs.csv', header=[0, 1])
     df_min = df.min().round(2)
     df_mean = df.mean().round(2)
     df_mean = df.max().round(2)
