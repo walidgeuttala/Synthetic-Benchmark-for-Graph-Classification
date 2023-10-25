@@ -358,6 +358,20 @@ def create_DF(param, graphs, data_dist):
       avg_shortest_path.append(calculate_avg_shortest_path(dgl.from_networkx(graphs[i*length+j])))
     df.insert(i+i*5+5, column=(key, 'avg_shortest_path'), value=avg_shortest_path)  
 
+  for i, key in enumerate(param):
+    list_max_degrees = []
+    for j in range(length):
+      max_degrees, _ = calculate_max_degree_and_variance(graphs[i*length+j])
+      list_max_degrees.append(max_degrees)
+    df.insert(i+i*6+6, column=(key, 'max_degree'), value=list_max_degrees) 
+
+  for i, key in enumerate(param):
+    list_variance_degrees = []
+    for j in range(length):
+      _, degree_variances = calculate_max_degree_and_variance(graphs[i*length+j])
+      list_variance_degrees.append(degree_variances)
+    df.insert(i+i*7+7, column=(key, 'variance_degree'), value=list_variance_degrees)
+    
   return df
     
 
