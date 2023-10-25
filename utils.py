@@ -17,6 +17,27 @@ from sklearn.manifold import TSNE
 from sklearn.metrics import mean_squared_error
 from itertools import combinations
 
+
+
+output_combinations = {
+    1: ("identity feat", "gnn"),
+    2: ("identity feat", "hierarchical"),
+    3: ("identity feat", "gin"),
+    4: ("identity feat", "global"),
+    5: ("degree feat", "gnn"),
+    6: ("degree feat", "hierarchical"),
+    7: ("degree feat", "gin"),
+    8: ("degree feat", "global"),
+    9: ("noise feat", "gnn"),
+    10: ("noise feat", "hierarchical"),
+    11: ("noise feat", "gin"),
+    12: ("noise feat", "global"),
+    13: ("ones feat", "gnn"),
+    14: ("ones feat", "hierarchical"),
+    15: ("ones feat", "gin"),
+    16: ("ones feat", "global")
+}
+
 def get_stats(
     array, conf_interval=False, name=None, stdout=False, logout=False
 ):
@@ -388,7 +409,7 @@ def comparing_hidden_feat(data_path, output_path, number_samples_for_type_graph,
         scatter_plot_classes_given_feat(data, array, classes, output_path, title="{} Scatter Plot ({}, {}) where circle is hidden_feat and triangle is the properties"
         .format(names_methods[type_dim_red], df.iloc[:, i[0]].name, df.iloc[:, i[1]].name), name_feat1=df.iloc[:, i[0]].name, name_feat2=df.iloc[:, i[1]].name)
 
-def comparing_hidden_feat2(data_path, output_path, number_samples_for_type_graph, type_dim_red):
+def comparing_hidden_feat2(data_path, output_path, number_samples_for_type_graph, type_dim_red, idx):
     names_methods = ['PCA', 'Kernel_PCA', 'T-SNE']
     if type_dim_red == 0:
         data = torch.tensor(read_hidden_feat(output_path, 'pca', 2))
@@ -420,14 +441,14 @@ def comparing_hidden_feat2(data_path, output_path, number_samples_for_type_graph
 
     n = df.shape[1] 
     networks_names = df1.columns.get_level_values(0).unique()
-    scatter_plot_classes(data, classes, output_path,networks_names, '{} Scatter Plot for classes'.format(names_methods[type_dim_red]))    
+    scatter_plot_classes(data, classes, output_path,networks_names, '{} {} Scatter Plot for classes'.format(output_combinations[idx], names_methods[type_dim_red]))    
     
 
     for i in range(n):
         array = df.iloc[indices.tolist(), i].values
         
-        scatter_plot_classes_given_feat2(data, array, classes, output_path, "{} Scatter Plot of the hidden features downsampled into 2 dimensions, with the heatmap coloring representing the {}"
-        .format(names_methods[type_dim_red], df.iloc[:, i].name), df.iloc[:, i].name, networks_names)
+        scatter_plot_classes_given_feat2(data, array, classes, output_path, "{} {} Scatter Plot of the hidden features downsampled into 2 dimensions, with the heatmap coloring representing the {}"
+        .format(output_combinations[idx], names_methods[type_dim_red], df.iloc[:, i].name), df.iloc[:, i].name, networks_names)
 
 def scatter_plot_classes_given_feat2(X1, X2, y, output_path, title, column_name, networks_names):
     plt.figure(figsize=(14, 10))
