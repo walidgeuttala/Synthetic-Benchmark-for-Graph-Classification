@@ -361,14 +361,14 @@ def create_DF(param, graphs, data_dist):
   for i, key in enumerate(param):
     list_max_degrees = []
     for j in range(length):
-      max_degrees, _ = calculate_max_degree_and_variance(graphs[i*length+j])
+      max_degrees = np.max(graphs[i*length+j].in_degrees().numpy()).item()
       list_max_degrees.append(max_degrees)
     df.insert(i+i*6+6, column=(key, 'max_degree'), value=list_max_degrees) 
 
   for i, key in enumerate(param):
     list_variance_degrees = []
     for j in range(length):
-      _, degree_variances = calculate_max_degree_and_variance(graphs[i*length+j])
+      degree_variances = np.var(graphs[i*length+j].in_degrees().numpy()).item()
       list_variance_degrees.append(degree_variances)
     df.insert(i+i*7+7, column=(key, 'variance_degree'), value=list_variance_degrees)
     

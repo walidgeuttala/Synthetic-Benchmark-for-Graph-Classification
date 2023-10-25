@@ -557,20 +557,3 @@ def merge_stanfrod_prediction_and_properties():
     result.to_csv('stanfrod_prediction_with_properites.csv', index=False)
 
     return result
-
-def calculate_max_degree_and_variance(graph_list):
-    max_degrees = []
-    degree_variances = []
-
-    for graph in graph_list:
-        degrees = graph.in_degrees().numpy()  # Get the in-degrees of each node as a NumPy array
-        max_degree = np.max(degrees)
-        degree_variance = np.var(degrees)
-
-        max_degrees.append(max_degree)
-        degree_variances.append(degree_variance)
-
-    max_degrees = np.array(max_degrees)
-    degree_variances = np.array(degree_variances)
-
-    return max_degrees, degree_variances
