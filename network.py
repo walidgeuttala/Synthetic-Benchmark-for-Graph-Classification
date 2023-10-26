@@ -236,7 +236,6 @@ class GNN(torch.nn.Module):
         # Compute hidden representations at each layer
         for i, layer in enumerate(self.layers):
             feat = layer(graph, feat).mean(1)
-            print(feat.shape)
             hidden_rep.append(feat)
         
         # Perform graph sum pooling over all nodes in each layer and weight for every representation
