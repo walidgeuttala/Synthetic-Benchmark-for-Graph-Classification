@@ -241,7 +241,7 @@ class GNN(torch.nn.Module):
         # Perform graph sum pooling over all nodes in each layer and weight for every representation
         pooled_h = []
         for i, h in enumerate(hidden_rep):
-            pooled_h.append(self.linear_prediction[i](self.pool(graph, h)))
+            pooled_h.append(self.pool(graph, h))
         
         pooled_h = torch.cat(pooled_h, dim=-1)
         pooled_hh = self.before_last_linear(pooled_h)
