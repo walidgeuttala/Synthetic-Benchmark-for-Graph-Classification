@@ -9,10 +9,10 @@ from dgl.nn.pytorch.conv import SAGEConv
 import dgl.function as fn
 from dgl.nn import GATConv
 from dgl.nn import GATv2Conv
-from dgl.nn.pytorch.conv import GINConv
+from dgl.nn.pytorch.conv import GINConv, GATConv
 from torch import nn
 import numpy as np
-
+from dgl.nn.pytorch.glob import GlobalAttentionPooling
 
 class SAGNetworkHierarchical(torch.nn.Module):
     """The Self-Attention Graph Pooling Network with hierarchical readout in paper
@@ -190,12 +190,13 @@ class GNN(torch.nn.Module):
         self.output_dim = out_dim
         self.output_activation = output_activation
         self.ann_input_shape = num_layers * hidden_dim 
+        self.num_heads = 3
         # Create GNN layers
         for layer in range(num_layers):  # excluding the input layer
             if layer == 0:
-                conv = SAGEConv(self.input_dim, hidden_dim, "mean", dropout, True, torch.nn.BatchNorm1d(hidden_dim), torch.nn.ReLU())
+                conv = GATConv(in_feats=self.input_dim,out_feats=hidden_dim, num_heads=self.num_heads, feat_drop=dropout, activation=torch.nn.ReLU())
             else:
-                conv = SAGEConv(hidden_dim, hidden_dim, "mean", dropout, True, torch.nn.BatchNorm1d(hidden_dim), torch.nn.ReLU())
+                conv = GATConv(in_feats=hidden_dim, out_feats=hidden_dim, num_heads=self.num_heads, feat_drop=dropout, activation=torch.nn.ReLU())
             self.layers.append(conv)
         
         # Create linear prediction layers
@@ -206,14 +207,15 @@ class GNN(torch.nn.Module):
             self.linear_prediction.append(torch.nn.Sequential(torch.nn.Linear(_i_dim, _o_dim),
                                         torch.nn.ReLU(),
                                         torch.nn.BatchNorm1d(_o_dim)))
-        self.before_last_linear = torch.nn.Sequential(torch.nn.Linear(self.ann_input_shape, hidden_dim),
+        self.before_last_linear = torch.nn.Sequential(torch.nn.Linear(hidden_dim*num_layers, hidden_dim),
                                         torch.nn.ReLU(),
                                         torch.nn.BatchNorm1d(hidden_dim))
         self.last_linear = torch.nn.Sequential(torch.nn.Linear(hidden_dim, out_dim),
                                         torch.nn.ReLU(),
                                         torch.nn.BatchNorm1d(out_dim))
         # Create sum pooling module
-        self.pool = SumPooling()
+        
+        self.pool = GlobalAttentionPooling(MLP(hidden_dim, hidden_dim, hidden_dim))
 
     def forward(self, graph: dgl.DGLGraph):
         """
