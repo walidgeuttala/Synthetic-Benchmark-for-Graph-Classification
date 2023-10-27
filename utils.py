@@ -16,7 +16,7 @@ from sklearn.decomposition import KernelPCA, PCA
 from sklearn.manifold import TSNE
 from sklearn.metrics import mean_squared_error
 from itertools import combinations
-
+import seaborn as sns
 
 
 output_combinations = {
@@ -301,27 +301,22 @@ def update_args_with_dict(args, arg_dict):
         if hasattr(args, key):
             setattr(args, key, value)
 
-
-def read_hidden_feat(folder_path, method='pca', n_components=2):
+# return numpy array
+def read_hidden_feat(folder_path):
     # Specify the path to your HDF5 file
     file_path = "{}/save_hidden_output_test_trial0.h5".format(folder_path)
+    
     # Open the HDF5 file for reading
     with h5py.File(file_path, 'r') as file:
         # List all datasets in the file
         dataset_names = list(file.keys())
-
         # Iterate through all datasets and read them
         for dataset_name in dataset_names:
             data = file[dataset_name][:]
+    
+    return torch.tensor(data)
 
-    if method == 'pca':
-        data = apply_pca(data, n_components)
-    elif method == 'kernel_pca':
-        data = apply_kernel_pca(data, n_components)
-    else:
-        data = apply_t_sne(data, n_components)
 
-    return data
 
 
 def apply_pca(data, n_components):
@@ -362,15 +357,15 @@ def min_max_normalize(column):
     max_val = column.max()
     return (column - min_val) / (max_val - min_val)
 
-def comparing_hidden_feat(data_path, output_path, number_samples_for_type_graph, type_dim_red):
-    names_methods = ['PCA', 'Kernel_PCA', 'T-SNE']
-    if type_dim_red == 0:
-        data = torch.tensor(read_hidden_feat(output_path, 'pca', 2))
-    elif type_dim_red == 1:
-        data = torch.tensor(read_hidden_feat(output_path, 'kernel_pca', 2))
-    else:
-        data = torch.tensor(read_hidden_feat(output_path, 't-sne', 2))
+# doing dim reduction with changing the data from numpy array into tensor
+def dim_reduction(data, method_num, n_components=2):
+    names_methods = ['apply_pca', 'apply_kernel_pca', 'apply_t_sne']
+    data = globals()[names_methods[method_num]](data, n_components)
+    return torch.tensor(data)
 
+def comparing_hidden_feat(data_path, output_path, number_samples_for_type_graph, method_num):
+    names_methods = ['PCA', 'Kernel_PCA', 'T-SNE']
+    data = dim_reduction(read_hidden_feat(output_path), method_num, 2)
     data = min_max_norm(data)
 
     indices = torch.load('{}/test_indices.pt'.format(output_path))
@@ -379,11 +374,11 @@ def comparing_hidden_feat(data_path, output_path, number_samples_for_type_graph,
     output_path = output_path + '/analysis_plots'
     if not os.path.exists(output_path):
         os.mkdir(output_path)
-    output_path = output_path + '/{}'.format(names_methods[type_dim_red])
+    output_path = output_path + '/{}'.format(names_methods[method_num])
     if not os.path.exists(output_path):
         os.mkdir(output_path)
 
-    scatter_plot_classes(data, classes, output_path, '{} Scatter Plot for classes'.format(names_methods[type_dim_red]))    
+    scatter_plot_classes(data, classes, output_path, '{} Scatter Plot for classes'.format(names_methods[method_num]))    
 
     df1 = pd.read_csv('./{}/info_about_graphs.csv'.format(data_path), header=[0, 1])
     networks_names = df1.columns.get_level_values(0).unique()
@@ -401,23 +396,15 @@ def comparing_hidden_feat(data_path, output_path, number_samples_for_type_graph,
     for i in range(n):
         combinations_list.insert(i, (i, i))
 
-        
-
     for i in combinations_list:
         array = min_max_norm(torch.tensor(df.iloc[indices.tolist(), list(i)].values))
 
         scatter_plot_classes_given_feat(data, array, classes, output_path, title="{} Scatter Plot ({}, {}) where circle is hidden_feat and triangle is the properties"
-        .format(names_methods[type_dim_red], df.iloc[:, i[0]].name, df.iloc[:, i[1]].name), name_feat1=df.iloc[:, i[0]].name, name_feat2=df.iloc[:, i[1]].name)
+        .format(names_methods[method_num], df.iloc[:, i[0]].name, df.iloc[:, i[1]].name), name_feat1=df.iloc[:, i[0]].name, name_feat2=df.iloc[:, i[1]].name)
 
-def comparing_hidden_feat2(data_path, output_path, number_samples_for_type_graph, type_dim_red, idx):
+def comparing_hidden_feat2(data_path, output_path, number_samples_for_type_graph, method_num, idx):
     names_methods = ['PCA', 'Kernel_PCA', 'T-SNE']
-    if type_dim_red == 0:
-        data = torch.tensor(read_hidden_feat(output_path, 'pca', 2))
-    elif type_dim_red == 1:
-        data = torch.tensor(read_hidden_feat(output_path, 'kernel_pca', 2))
-    else:
-        data = torch.tensor(read_hidden_feat(output_path, 't-sne', 2))
-
+    data = dim_reduction(read_hidden_feat(output_path), method_num, 2)
     data = min_max_norm(data)
 
     indices = torch.load('{}/test_indices.pt'.format(output_path))
@@ -426,7 +413,7 @@ def comparing_hidden_feat2(data_path, output_path, number_samples_for_type_graph
     output_path = output_path + '/analysis_plots'
     if not os.path.exists(output_path):
         os.mkdir(output_path)
-    output_path = output_path + '/{}'.format(names_methods[type_dim_red])
+    output_path = output_path + '/{}'.format(names_methods[method_num])
     if not os.path.exists(output_path):
         os.mkdir(output_path)
 
@@ -441,14 +428,14 @@ def comparing_hidden_feat2(data_path, output_path, number_samples_for_type_graph
 
     n = df.shape[1] 
     networks_names = df1.columns.get_level_values(0).unique()
-    scatter_plot_classes(data, classes, output_path,networks_names, '{} {} Scatter Plot for classes'.format(output_combinations[idx], names_methods[type_dim_red]))    
+    scatter_plot_classes(data, classes, output_path,networks_names, '{} {} Scatter Plot for classes'.format(output_combinations[idx], names_methods[method_num]))    
     
 
     for i in range(n):
         array = df.iloc[indices.tolist(), i].values
         
         scatter_plot_classes_given_feat2(data, array, classes, output_path, "{} {} Scatter Plot of the hidden features downsampled into 2 dimensions, with the heatmap coloring representing the {}"
-        .format(output_combinations[idx], names_methods[type_dim_red], df.iloc[:, i].name), df.iloc[:, i].name, networks_names)
+        .format(output_combinations[idx], names_methods[method_num], df.iloc[:, i].name), df.iloc[:, i].name, networks_names)
 
 def scatter_plot_classes_given_feat2(X1, X2, y, output_path, title, column_name, networks_names):
     plt.figure(figsize=(14, 10))
@@ -578,3 +565,46 @@ def merge_stanfrod_prediction_and_properties():
     result.to_csv('stanfrod_prediction_with_properites.csv', index=False)
 
     return result
+
+
+def plot_frequency_distributions(data):
+    num_columns = data.shape[1]
+
+    # Calculate the number of rows and columns for the grid
+    num_rows = (num_columns + 3) // 4  # Assuming 4 plots per row
+
+    # Set up subplots in a grid layout
+    fig, axes = plt.subplots(nrows=num_rows, ncols=4, figsize=(16, 4 * num_rows))
+
+    for i in range(num_columns):
+        row, col = divmod(i, 4)  # Calculate the row and column for each plot
+        ax = axes[row, col]
+        column_data = data[:, i]
+
+        ax.hist(column_data, bins=20, color='skyblue', edgecolor='black')
+        ax.set_title(f'Column {i + 1} Frequency Distribution')
+        ax.set_xlabel('Value')
+        ax.set_ylabel('Frequency')
+
+    # Remove any empty subplots
+    for i in range(num_columns, num_rows * 4):
+        fig.delaxes(axes.flatten()[i])
+
+    plt.tight_layout()
+    plt.show()
+
+def correlation_heatmap(data, output_path, name_model, name_feat):
+    corr_matrix = np.abs(np.corrcoef(data, rowvar=False))
+
+    # Create a heatmap with color bars
+    plt.figure(figsize=(10, 8))
+    sns.set(font_scale=1)
+    sns.heatmap(corr_matrix, cmap='coolwarm', annot=False, linewidths=0.5, cbar=True)
+
+    # Add color bars
+    cax = plt.gcf().axes[-1]
+    cax.set_ylabel('Correlation', size=14)
+
+    plt.title('Correlation Matrix Heatmap {} {}'.format(name_model, name_feat), size=16)
+    plt.show()
+    plt.savefig('{}/Correlation Matrix Heatmap {} {}.png'.format(output_path, name_model, name_feat))
