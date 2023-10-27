@@ -215,7 +215,7 @@ class GNN(torch.nn.Module):
                                         torch.nn.BatchNorm1d(out_dim))
         # Create sum pooling module
         
-        self.pool = GlobalAttentionPooling(MLP(hidden_dim, hidden_dim, 1))
+        self.pool = AvgPooling()
 
     def forward(self, graph: dgl.DGLGraph):
         """
