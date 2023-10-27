@@ -207,7 +207,7 @@ class GNN(torch.nn.Module):
             self.linear_prediction.append(torch.nn.Sequential(torch.nn.Linear(_i_dim, _o_dim),
                                         torch.nn.ReLU(),
                                         torch.nn.BatchNorm1d(_o_dim)))
-        self.before_last_linear = torch.nn.Sequential(torch.nn.Linear(hidden_dim*num_layers, hidden_dim),
+        self.before_last_linear = torch.nn.Sequential(torch.nn.Linear(hidden_dim, hidden_dim),
                                         torch.nn.ReLU(),
                                         torch.nn.BatchNorm1d(hidden_dim))
         self.last_linear = torch.nn.Sequential(torch.nn.Linear(hidden_dim, out_dim),
