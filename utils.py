@@ -316,10 +316,8 @@ def read_hidden_feat(folder_path):
     
     return torch.tensor(data)
 
-
-
-
 def apply_pca(data, n_components):
+    data = data.numpy()
     pca = PCA(n_components=n_components)
     reduced_data = pca.fit_transform(data)
     
@@ -608,3 +606,6 @@ def correlation_heatmap(data, output_path, name_model, name_feat):
     plt.title('Correlation Matrix Heatmap {} {}'.format(name_model, name_feat), size=16)
     plt.show()
     plt.savefig('{}/Correlation Matrix Heatmap {} {}.png'.format(output_path, name_model, name_feat))
+
+
+

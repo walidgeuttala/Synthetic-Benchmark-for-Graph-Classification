@@ -46,6 +46,9 @@ def parse_args():
     parser.add_argument("--save_hidden_output_test", type=bool, default=False, help="saving the output before output_activation applied for the model testing/validation")
     parser.add_argument("--save_last_epoch_hidden_output", type=bool, default=False, help="saving the last epoch hidden output only if it is false that means save for all epochs this applied to train and test if they are True")
     parser.add_argument("--loss_name", type=str, default='nll_loss', help='choose loss function corrlated to the optimization function')
+    parser.add_argument("--accuracy", type=float, default=0, help='accuracy result')
+    parser.add_argument("--error_accuracy", type=float, default=0, help='accuracy result')
+    
     args, _ = parser.parse_known_args()
 
     if not torch.cuda.is_available():
@@ -253,7 +256,7 @@ def main(args, seed, save=True):
     if save == True:
         torch.save(model.state_dict(), '{}/last_model_weights_trail{}_{}_{}.pth'.format(args.output_path, seed, args.dataset, args.feat_type))
     
-    return final_test_acc, sum(train_times) / len(train_times), [train_loss_list, train_acc_list, val_acc_list] 
+    return final_test_acc, sum(train_times) / len(train_times), [train_loss_list, train_acc_list, val_acc_list], [train_loss_list[-1], train_acc_list[-1], val_acc_list[-1], final_test_acc]
 
 
 def stats():
@@ -268,9 +271,11 @@ if __name__ == "__main__":
     idx = None
     best_acc = -1
     stat_list = []
+    # train loss, train acc, valid acc, test acc
+    list_results = []
     for i in range(args.num_trials):
         print("Trial {}/{}".format(i + 1, args.num_trials))
-        acc, train_time, stat = main(args, i)
+        acc, train_time, stat, results = main(args, i)
         accs.append(acc)
         if best_acc < acc:
             idx = i
@@ -278,6 +283,7 @@ if __name__ == "__main__":
             
         train_times.append(train_time)
         stat_list.append(stat)
+        list_results.append(results)
     
 
     if args.plot_statistics == True:
@@ -292,6 +298,7 @@ if __name__ == "__main__":
         "hyper-parameters": vars(args),
         "result": "{:.4f}(+-{:.4f})".format(mean, err_bd),
         "train_time": "{:.4f}".format(sum(train_times) / len(train_times)),
+        "results": list_results
     }
 
     with open(args.output, "w") as f:
