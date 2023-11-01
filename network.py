@@ -61,13 +61,14 @@ class SAGNetworkHierarchical(torch.nn.Module):
     def forward(self, graph: dgl.DGLGraph, args):
         feat = graph.ndata["feat"]
         final_readout = None
-
+        value = args.activate
+        args.activate = False
         for i in range(self.num_convpools):
-            if args.save_last_epoch_hidden_features_for_nodes == True and i == self.num_convpools-1:
+            if args.save_last_epoch_hidden_features_for_nodes == True and i == self.num_convpools-1 and value:
                 args.activate = True
             
             graph, feat, readout = self.convpools[i](graph, feat, args)
-            args.activate = False
+            
             if final_readout is None:
                 final_readout = readout
             else:
