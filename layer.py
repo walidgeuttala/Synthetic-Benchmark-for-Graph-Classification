@@ -69,7 +69,7 @@ class ConvPoolBlock(torch.nn.Module):
         out = F.relu(self.conv(graph, feature))
         if args.activate == True:
             with h5py.File("{}/save_hidden_node_feat_test_trial{}.h5".format(args.output_path, args.current_trial), 'a') as hf:
-                hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=out.numpy())
+                hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=out.cpu().numpy())
 
         graph, out, _ = self.pool(graph, out)
         g_out = torch.cat(

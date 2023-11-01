@@ -134,7 +134,7 @@ class SAGNetworkGlobal(torch.nn.Module):
             conv_res.append(feat)
         if args.activate == True:
             with h5py.File("{}/save_hidden_node_feat_test_trial{}.h5".format(args.output_path, args.current_trial), 'a') as hf:
-                hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=conv_res[-1].numpy())
+                hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=conv_res[-1].cpu().numpy())
         conv_res = torch.cat(conv_res, dim=-1)
         graph, feat, _ = self.pool(graph, conv_res)
         feat = torch.cat(
@@ -246,7 +246,7 @@ class GNN(torch.nn.Module):
         
         if args.activate == True:
             with h5py.File("{}/save_hidden_node_feat_test_trial{}.h5".format(args.output_path, args.current_trial), 'a') as hf:
-                hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=feat.numpy())
+                hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=feat.cpu().numpy())
 
         # Perform graph sum pooling over all nodes in each layer and weight for every representation
         pooled_h = []
@@ -327,7 +327,7 @@ class GIN(nn.Module):
         
         if args.activate == True:
             with h5py.File("{}/save_hidden_node_feat_test_trial{}.h5".format(args.output_path, args.current_trial), 'a') as hf:
-                hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=hidden_rep[-1].numpy())
+                hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=hidden_rep[-1].cpu().numpy())
 
 
         # perform graph sum pooling over all nodes in each layer
