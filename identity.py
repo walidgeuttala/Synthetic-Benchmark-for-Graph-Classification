@@ -24,7 +24,7 @@ def norm(edge_index, num_nodes, edge_weight=None, improved=False, dtype=None):
 # cpu version
 def compute_identity(edge_index, n, k):
     id, value = norm(edge_index, n)
-    adj_sparse = torch.sparse.FloatTensor(id, value, torch.Size([n, n]))
+    adj_sparse = torch.sparse_coo_tensor(id, value, torch.Size([n, n]))
     adj = adj_sparse.to_dense()
     diag_all = [torch.diag(adj)]
     adj_power = adj

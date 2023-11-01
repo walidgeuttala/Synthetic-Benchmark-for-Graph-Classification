@@ -10,13 +10,11 @@ import random
 import torch
 import torch.nn
 import torch.nn.functional as F
-from dgl.data import LegacyTUDataset
 from dgl.dataloading import GraphDataLoader
 from network import get_network
 from torch.utils.data import random_split
 from utils import get_stats, boxplot, acc_loss_plot, set_random_seed
 from data import GraphDataset
-from test_stanford_networks import test_networks
 import h5py
 
 def parse_args():
@@ -45,10 +43,13 @@ def parse_args():
     parser.add_argument("--save_hidden_output_train", type=bool, default=False, help="saving the output before output_activation applied for the model in training")
     parser.add_argument("--save_hidden_output_test", type=bool, default=False, help="saving the output before output_activation applied for the model testing/validation")
     parser.add_argument("--save_last_epoch_hidden_output", type=bool, default=False, help="saving the last epoch hidden output only if it is false that means save for all epochs this applied to train and test if they are True")
+    parser.add_argument("--save_last_epoch_hidden_features_for_nodes", type=bool, default=False, help="saving the last epoch hidden features of nodes only if it is false that means save for all epochs this applied to train and test if they are True")
     parser.add_argument("--loss_name", type=str, default='nll_loss', help='choose loss function corrlated to the optimization function')
-    parser.add_argument("--accuracy", type=float, default=0, help='accuracy result')
-    parser.add_argument("--error_accuracy", type=float, default=0, help='accuracy result')
-    
+    parser.add_argument("--current_epoch", type=int, default=1, help="the current epoch")
+    parser.add_argument("--current_trial", type=int, default=1, help="the current trial")
+    parser.add_argument("--activate", type=bool, default=False, help="Activatte the saving the node feature slearned in the test dataset")
+    parser.add_argument("--current_batch", type=int, default=1, help="the current batch")
+
     args, _ = parser.parse_known_args()
 
     if not torch.cuda.is_available():
@@ -90,12 +91,12 @@ def train(model: torch.nn.Module, optimizer, trainloader, device, args, trial, e
         batch_graphs = batch_graphs.to(device)
         batch_labels = batch_labels.long().to(device)
         if args.save_hidden_output_train == True and (args.save_last_epoch_hidden_output == False or e == args.epochs-1):
-            out, hidden_feat = model(batch_graphs)
+            out, hidden_feat = model(batch_graphs, args)
             hidden_feat = hidden_feat.cpu().detach().numpy()
             list_hidden_output.append(hidden_feat)
             del hidden_feat
         else:
-            out, _ = model(batch_graphs)
+            out, _ = model(batch_graphs, args)
         loss = getattr(F, args.loss_name)(out, batch_labels)
         loss.backward()
         optimizer.step()
@@ -115,23 +116,25 @@ def test(model: torch.nn.Module, loader, device, args, trial, e, if_test):
     loss = 0.0
     num_graphs = 0
     list_hidden_output = []
-
+    args.current_batch = 1
+    args.current_trial = trial 
+    args.current_epoch = e
     for batch in loader:
         batch_graphs, batch_labels = batch
         num_graphs += batch_labels.size(0)
         batch_graphs = batch_graphs.to(device)
         batch_labels = batch_labels.long().to(device)
         if args.save_hidden_output_test == True and if_test and (args.save_last_epoch_hidden_output == False or e == args.epochs-1):
-            out, hidden_feat = model(batch_graphs)
+            out, hidden_feat = model(batch_graphs, args)
             hidden_feat = hidden_feat.cpu().detach().numpy()
             list_hidden_output.append(hidden_feat)
             del hidden_feat
         else:
-            out, _ = model(batch_graphs)
+            out, _ = model(batch_graphs, args)
         pred = out.argmax(dim=1)
         loss += F.nll_loss(out, batch_labels, reduction="sum").item()
         correct += pred.eq(batch_labels).sum().item()
-
+        args.current_batch += 1
     if args.save_hidden_output_test == True and if_test and (args.save_last_epoch_hidden_output == False or e == args.epochs-1):
         with h5py.File("{}/save_hidden_output_test_trial{}.h5".format(args.output_path, trial), 'a') as hf:
             hf.create_dataset('epoch_{}'.format(e), data=np.concatenate(list_hidden_output))
@@ -229,7 +232,13 @@ def main(args, seed, save=True):
         train_loss_list.append(train_loss)
         train_acc_list.append(train_acc)
         val_acc_list.append(val_acc)
-        test_acc, _ = test(model, test_loader, device, args, seed, e, 1)
+        if args.save_last_epoch_hidden_features_for_nodes:
+            args.activate = True
+            test_acc, _ = test(model, test_loader, device, args, seed, e, 1)
+            args.activate = False 
+        else:
+            test_acc, _ = test(model, test_loader, device, args, seed, e, 1)
+
         if best_val_loss > val_loss:
             best_val_loss = val_loss
             final_test_acc = test_acc

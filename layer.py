@@ -3,7 +3,7 @@ import torch
 import torch.nn.functional as F
 from dgl.nn import AvgPooling, GraphConv, MaxPooling
 from utils import get_batch_id, topk
-
+import h5py
 
 class SAGPool(torch.nn.Module):
     """The Self-Attention Pooling layer in paper
@@ -65,8 +65,12 @@ class ConvPoolBlock(torch.nn.Module):
         self.avgpool = AvgPooling()
         self.maxpool = MaxPooling()
 
-    def forward(self, graph, feature):
+    def forward(self, graph, feature, args):
         out = F.relu(self.conv(graph, feature))
+        if args.activate == True:
+            with h5py.File("{}/save_hidden_node_feat_test_trial{}.h5".format(args.output_path, args.current_trial), 'a') as hf:
+                hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=out.numpy())
+
         graph, out, _ = self.pool(graph, out)
         g_out = torch.cat(
             [self.avgpool(graph, out), self.maxpool(graph, out)], dim=-1

@@ -13,6 +13,7 @@ from dgl.nn.pytorch.conv import GINConv, GATConv
 from torch import nn
 import numpy as np
 from dgl.nn.pytorch.glob import GlobalAttentionPooling
+import h5py
 
 class SAGNetworkHierarchical(torch.nn.Module):
     """The Self-Attention Graph Pooling Network with hierarchical readout in paper
@@ -57,12 +58,16 @@ class SAGNetworkHierarchical(torch.nn.Module):
         self.lin2 = torch.nn.Linear(hidden_dim, hidden_dim)
         self.lin3 = torch.nn.Linear(hidden_dim, out_dim)
 
-    def forward(self, graph: dgl.DGLGraph):
+    def forward(self, graph: dgl.DGLGraph, args):
         feat = graph.ndata["feat"]
         final_readout = None
 
         for i in range(self.num_convpools):
-            graph, feat, readout = self.convpools[i](graph, feat)
+            if args.save_last_epoch_hidden_features_for_nodes == True and i == self.num_convpools-1:
+                args.activate = True
+            
+            graph, feat, readout = self.convpools[i](graph, feat, args)
+            args.activate = False
             if final_readout is None:
                 final_readout = readout
             else:
@@ -120,14 +125,16 @@ class SAGNetworkGlobal(torch.nn.Module):
         self.lin2 = torch.nn.Linear(hidden_dim, hidden_dim)
         self.lin3 = torch.nn.Linear(hidden_dim, out_dim)
 
-    def forward(self, graph: dgl.DGLGraph):
+    def forward(self, graph: dgl.DGLGraph, args):
         feat = graph.ndata["feat"]
         conv_res = []
 
         for i in range(self.num_layers):
             feat = self.convs[i](graph, feat)
             conv_res.append(feat)
-
+        if args.activate == True:
+            with h5py.File("{}/save_hidden_node_feat_test_trial{}.h5".format(args.output_path, args.current_trial), 'a') as hf:
+                hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=conv_res[-1].numpy())
         conv_res = torch.cat(conv_res, dim=-1)
         graph, feat, _ = self.pool(graph, conv_res)
         feat = torch.cat(
@@ -217,7 +224,7 @@ class GNN(torch.nn.Module):
         
         self.pool = AvgPooling()
 
-    def forward(self, graph: dgl.DGLGraph):
+    def forward(self, graph: dgl.DGLGraph, args):
         """
         Perform a forward pass through the GNN given a graph and input node features.
 
@@ -231,13 +238,16 @@ class GNN(torch.nn.Module):
         """
         # list of hidden representation at each layer 
         feat = graph.ndata["feat"]
-        hidden_rep = []
         
         # Compute hidden representations at each layer
         for i, layer in enumerate(self.layers):
             feat = layer(graph, feat).mean(1)
            # hidden_rep.append(feat)
         
+        if args.activate == True:
+            with h5py.File("{}/save_hidden_node_feat_test_trial{}.h5".format(args.output_path, args.current_trial), 'a') as hf:
+                hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=feat.numpy())
+
         # Perform graph sum pooling over all nodes in each layer and weight for every representation
         pooled_h = []
         #for i, h in enumerate(hidden_rep):
@@ -304,7 +314,7 @@ class GIN(nn.Module):
             SumPooling()
         )  # change to mean readout (AvgPooling) on social network datasets
 
-    def forward(self, g):
+    def forward(self, g, args):
         # list of hidden representation at each layer (including the input layer)
         h = g.ndata["feat"]
         hidden_rep = [h]
@@ -314,6 +324,12 @@ class GIN(nn.Module):
             h = F.relu(h)
             hidden_rep.append(h)
         score_over_layer = 0
+        
+        if args.activate == True:
+            with h5py.File("{}/save_hidden_node_feat_test_trial{}.h5".format(args.output_path, args.current_trial), 'a') as hf:
+                hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=hidden_rep[-1].numpy())
+
+
         # perform graph sum pooling over all nodes in each layer
         pooled_h_list = []
         for i, h in enumerate(hidden_rep):
