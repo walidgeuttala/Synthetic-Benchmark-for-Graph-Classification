@@ -9,7 +9,7 @@ from dgl.nn.pytorch.conv import SAGEConv
 import dgl.function as fn
 from dgl.nn import GATConv
 from dgl.nn import GATv2Conv
-from dgl.nn.pytorch.conv import GINConv, GATConv
+from dgl.nn.pytorch.conv import GINConv, DotGatConv
 from torch import nn
 import numpy as np
 from dgl.nn.pytorch.glob import GlobalAttentionPooling
@@ -202,9 +202,9 @@ class GNN(torch.nn.Module):
         # Create GNN layers
         for layer in range(num_layers):  # excluding the input layer
             if layer == 0:
-                conv = GATConv(in_feats=self.input_dim,out_feats=hidden_dim, num_heads=self.num_heads, feat_drop=dropout, activation=torch.nn.ReLU())
+                conv = DotGatConv(in_feats=self.input_dim,out_feats=hidden_dim, num_heads=self.num_heads)
             else:
-                conv = GATConv(in_feats=hidden_dim, out_feats=hidden_dim, num_heads=self.num_heads, feat_drop=dropout, activation=torch.nn.ReLU())
+                conv = DotGatConv(in_feats=hidden_dim, out_feats=hidden_dim, num_heads=self.num_heads)
             self.layers.append(conv)
         
         # Create linear prediction layers
