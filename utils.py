@@ -17,7 +17,7 @@ from sklearn.manifold import TSNE
 from sklearn.metrics import mean_squared_error
 from itertools import combinations
 import seaborn as sns
-
+import json
 
 output_combinations = {
     1: ("identity feat", "gnn"),
@@ -316,6 +316,21 @@ def read_hidden_feat(folder_path):
     
     return torch.tensor(data)
 
+def read_hidden_feat2(folder_path):
+    # Specify the path to your HDF5 file
+    file_path = "{}/save_hidden_output_test_trial0.h5".format(folder_path)
+    
+    # Open the HDF5 file for reading
+    with h5py.File(file_path, 'r') as file:
+        # List all datasets in the file
+        dataset_names = list(file.keys())
+        # Iterate through all datasets and read them
+        data = []
+        for dataset_name in dataset_names:
+            data.append(file[dataset_name][:])
+    
+    return torch.tensor(data)
+
 def apply_pca(data, n_components):
     data = data.numpy()
     pca = PCA(n_components=n_components)
@@ -606,6 +621,121 @@ def correlation_heatmap(data, output_path, name_model, name_feat):
     plt.title('Correlation Matrix Heatmap {} {}'.format(name_model, name_feat), size=16)
     plt.show()
     plt.savefig('{}/Correlation Matrix Heatmap {} {}.png'.format(output_path, name_model, name_feat))
+
+
+
+@torch.no_grad()
+def test2(model: torch.nn.Module, loader, device, args, trial, e, if_test):
+    model.eval()
+    correct = 0.0
+    loss = 0.0
+    num_graphs = 0
+    list_hidden_output = []
+    args['current_batch'] = 1
+    args['current_trial'] = trial
+    args['current_epoch'] = e
+    for batch in loader:
+        batch_graphs, batch_labels = batch
+        num_graphs += batch_labels.size(0)
+        batch_graphs = batch_graphs.to(device)
+        batch_labels = batch_labels.long().to(device)
+
+        # Calculate hidden features
+        if args['save_hidden_output_test'] == True and if_test and (args['save_last_epoch_hidden_output'] == False or e == args['epochs']-1):
+            out, hidden_feat = model(batch_graphs, args)
+            hidden_feat = hidden_feat.cpu().detach().numpy()
+            list_hidden_output.append(hidden_feat)
+            del hidden_feat
+        # Calculate predictions and loss
+        out, _ = model(batch_graphs)
+        pred = out.argmax(dim=1)
+        loss += F.nll_loss(out, batch_labels, reduction="sum").item()
+        correct += pred.eq(batch_labels).sum().item()
+
+        # Delete variables that are no longer needed
+        del out
+        del pred
+
+        args['current_batch'] += 1
+
+    # Clear the list after it's no longer needed
+    if args['save_hidden_output_test'] == True and if_test and (args['save_last_epoch_hidden_output'] == False or e == args['epochs']-1):
+        with h5py.File("{}/save_hidden_output_test_trial{}.h5".format(args['output_path'], trial), 'a') as hf:
+            hf.create_dataset('epoch_{}'.format(e), data=np.concatenate(list_hidden_output))
+        list_hidden_output.clear()
+
+    return correct / num_graphs, loss / num_graphs
+
+
+
+def independent_test2():
+    combination_dicts = []
+    number_folders = len(combination_dicts)+1
+
+
+    results = []
+    selected_keys = ["architecture", "feat_type", "hidden_dim", "num_layers", "test_loss", "test_loss_error", "test_acc", "test_acc_error"]
+    for i in range(1, number_folders):
+        #read the model
+        output_path = "output{}/".format(i)
+        files_names = os.listdir(output_path)
+        models_path = [file for file in files_names if  "last_model_weights_trail" in file]
+        args_file_name = [file for file in files_names if "Data_dataset_Hidden_" in file][0]
+        args_path = output_path+args_file_name
+
+
+        with open(args_path, 'r') as f:
+            args = json.load(f)
+        args = args['hyper-parameters']
+        def get_network():
+            pass
+        accuracies = []
+        dataset1 = dataset2 = dataset3 = dataset4 = None
+        test_loader1 = test_loader2 = test_loader3 = test_loader4 = None
+        losses = []
+        device = None
+        for num_trial, model_path in enumerate(models_path):
+            model_op = get_network(args['architecture'])
+            if args['feat_type'] == 'ones_feat':
+                dataset = dataset1
+                test_loader = test_loader1
+            elif args['feat_type'] == 'degree_feat':
+                dataset = dataset2
+                test_loader = test_loader2
+            elif args['feat_type'] == 'noise_feat':
+                dataset = dataset3
+                test_loader = test_loader3
+            else:
+                dataset = dataset4
+                test_loader = test_loader4
+
+            num_feature, num_classes, _ = dataset.statistics()
+
+            model = model_op(
+                    in_dim=num_feature,
+                    hidden_dim=args['hidden_dim'],
+                    out_dim=num_classes,
+                    num_layers=args['num_layers'],
+                    pool_ratio=args['pool_ratio'],
+                    dropout=args['dropout'],
+                    output_activation = args['output_activation']
+            ).to(device)
+            model.load_state_dict(torch.load(output_path+model_path))
+            model.eval()
+            accuracy, loss = test2(model, test_loader, device, args, num_trial, 1, False)
+            accuracies.append(accuracy)
+            losses.append(loss)
+
+        accuracies = np.array(accuracies)
+        losses = np.array(losses)
+
+        result = [args["architecture"], args["feat_type"], args["hidden_dim"], args["num_layers"], losses.mean(), losses.var(), accuracies.mean(), accuracies.var()]
+        result = dict(zip(selected_keys, result))
+        results.append(result)
+
+    test_results = pd.DataFrame(results)
+    test_results.to_csv('test_resutls_large_networks.csv')
+
 
 
 

@@ -198,7 +198,7 @@ class GNN(torch.nn.Module):
         self.output_dim = out_dim
         self.output_activation = output_activation
         self.ann_input_shape = num_layers * hidden_dim 
-        self.num_heads = 3
+        self.num_heads = 4
         # Create GNN layers
         for layer in range(num_layers):  # excluding the input layer
             if layer == 0:
@@ -215,7 +215,7 @@ class GNN(torch.nn.Module):
             self.linear_prediction.append(torch.nn.Sequential(torch.nn.Linear(_i_dim, _o_dim),
                                         torch.nn.ReLU(),
                                         torch.nn.BatchNorm1d(_o_dim)))
-        self.before_last_linear = torch.nn.Sequential(torch.nn.Linear(hidden_dim, hidden_dim),
+        self.before_last_linear = torch.nn.Sequential(torch.nn.Linear(hidden_dim*num_layers, hidden_dim),
                                         torch.nn.ReLU(),
                                         torch.nn.BatchNorm1d(hidden_dim))
         self.last_linear = torch.nn.Sequential(torch.nn.Linear(hidden_dim, out_dim),
@@ -223,7 +223,7 @@ class GNN(torch.nn.Module):
                                         torch.nn.BatchNorm1d(out_dim))
         # Create sum pooling module
         
-        self.pool = AvgPooling()
+        self.pool = SumPooling()
 
     def forward(self, graph: dgl.DGLGraph, args):
         """
@@ -239,26 +239,22 @@ class GNN(torch.nn.Module):
         """
         # list of hidden representation at each layer 
         feat = graph.ndata["feat"]
-        
         # Compute hidden representations at each layer
+        pooled_h_list = []
         for i, layer in enumerate(self.layers):
             feat = layer(graph, feat).mean(1)
+            pooled_h = self.pool(graph, feat)
+            pooled_h_list.append(self.linear_prediction[i](pooled_h))
+            
            # hidden_rep.append(feat)
         
         if args.activate == True:
             with h5py.File("{}/save_hidden_node_feat_test_trial{}.h5".format(args.output_path, args.current_trial), 'a') as hf:
                 hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=feat.cpu().numpy())
-
-        # Perform graph sum pooling over all nodes in each layer and weight for every representation
-        pooled_h = []
-        #for i, h in enumerate(hidden_rep):
-        #    pooled_h.append(self.pool(graph, h))
-        pooled_h=self.pool(graph, feat)
-        #pooled_h = torch.cat(pooled_h, dim=-1)
+        
+        pooled_h = torch.cat(pooled_h_list, dim=-1)
         pooled_hh = self.before_last_linear(pooled_h)
         pooled_h = self.last_linear(pooled_hh)
-
-        
 
         return getattr(F, self.output_activation)(pooled_h, dim=-1), pooled_hh
 
