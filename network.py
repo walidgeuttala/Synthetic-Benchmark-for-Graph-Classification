@@ -344,7 +344,7 @@ def get_network(net_type: str = "hierarchical"):
         return SAGNetworkHierarchical
     elif net_type == "global":
         return SAGNetworkGlobal
-    elif net_type == 'gan':
+    elif net_type == 'gat':
         return GAN
     elif net_type == 'gin':
         return GIN
