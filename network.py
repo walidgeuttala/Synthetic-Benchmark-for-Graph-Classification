@@ -150,26 +150,26 @@ class SAGNetworkGlobal(torch.nn.Module):
         return getattr(F, self.output_activation)(self.lin3(feat), dim=-1), feat
 
 #hideen_feat is the output dim
-class GAN(torch.nn.Module):
+class GAT(torch.nn.Module):
     """
-    A graph neural network (GAN) that performs graph sum pooling over all nodes in each layer and makes a prediction
+    A graph neural network (GAT) that performs graph sum pooling over all nodes in each layer and makes a prediction
     using a linear layer.
 
     Args:
-        num_layers (int): Number of layers in the GAN
-        hidden_dim (int): Hidden dimension of the GAN layers
+        num_layers (int): Number of layers in the GAT
+        hidden_dim (int): Hidden dimension of the GAT layers
         drop (float): Dropout probability to use during training (default: 0)
 
     Attributes:
-        layers (nn.ModuleList): List of GAN layers
-        num (int): Number of layers in the GAN
+        layers (nn.ModuleList): List of GAT layers
+        num (int): Number of layers in the GAT
         input_dim (int): Dimension of the input feature vector
         output_dim (int): Dimension of the output prediction vector
         linear_prediction (nn.ModuleList): List of linear layers to make the prediction
         pool (SumPooling): A sum pooling module to perform graph sum pooling
 
     Methods:
-        forward(g, h): Perform a forward pass through the GAN given a graph and input node features.
+        forward(g, h): Perform a forward pass through the GAT given a graph and input node features.
 
     """
     def __init__(
@@ -183,11 +183,11 @@ class GAN(torch.nn.Module):
         output_activation = 'log_softmax',
     ):
         """
-        Initializes a new instance of the GAN class.
+        Initializes a new instance of the GAT class.
 
         Args:
-            num_layers (int): Number of layers in the GAN
-            hidden_dim (int): Hidden dimension of the GAN layers
+            num_layers (int): Number of layers in the GAT
+            hidden_dim (int): Hidden dimension of the GAT layers
             drop (float): Dropout probability to use during training (default: 0)
 
         """
@@ -199,7 +199,7 @@ class GAN(torch.nn.Module):
         self.output_activation = output_activation
         self.ann_input_shape = num_layers * hidden_dim 
         self.num_heads = 4
-        # Create GAN layers
+        # Create GAT layers
         for layer in range(num_layers):  # excluding the input layer
             if layer == 0:
                 conv = DotGatConv(in_feats=self.input_dim,out_feats=hidden_dim, num_heads=self.num_heads)
@@ -227,7 +227,7 @@ class GAN(torch.nn.Module):
 
     def forward(self, graph: dgl.DGLGraph, args):
         """
-        Perform a forward pass through the GAN given a graph and input node features.
+        Perform a forward pass through the GAT given a graph and input node features.
 
         Args:
             g (dgl.DGLGraph): A DGL graph
@@ -345,7 +345,7 @@ def get_network(net_type: str = "hierarchical"):
     elif net_type == "global":
         return SAGNetworkGlobal
     elif net_type == 'gat':
-        return GAN
+        return GAT
     elif net_type == 'gin':
         return GIN
     else:
