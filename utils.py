@@ -738,4 +738,38 @@ def independent_test2():
 
 
 
+def draw_figures_scatters(df):
+    # Create a list of unique feat_type values to assign different colors
+    feat_types = df['feat_type'].unique()
+    palette = sns.color_palette('husl', n_colors=len(feat_types))
+    length = len(df['hidden_dim'].unique())
+    # Create a separate plot for each architecture
+    x_axis = np.arange(1, 7)
+    for arch in df['architecture'].unique():
+        plt.figure(figsize=(10, 6))
+        plt.title(f'Architecture {arch} Test Accuracy vs Hidden Dimension')
+        x = 0
+        cnt = 1
+        for idx, feat_type in enumerate(feat_types):
+            subset = df[(df['architecture'] == arch) & (df['feat_type'] == feat_type)]            
+            x += 0.2
+            plt.scatter(x_axis+x, subset['test_acc'], label=f'{feat_type} - test_acc', marker='x', color=palette[idx])
+            plt.scatter(x_axis+x, subset['second_test_acc'], label=f'{feat_type} - second_test_acc', marker='s', facecolor='none', edgecolor=palette[idx])
+            
+        for idx in range(length):
+            plt.axvline(idx+1, color='red')
+        
+        plt.axvline(length+1, color='red')
 
+        min_hidden_dim = df['hidden_dim'].min()
+        max_hidden_dim = df['hidden_dim'].max()
+        x_ticks = [2 ** i for i in range(int(np.log2(min_hidden_dim)), int(np.log2(max_hidden_dim) + 1))]
+        plt.xticks(x_axis+0.5, labels=[str(val) for val in x_ticks])
+        plt.xlabel('Hidden Dimension')
+        
+        plt.ylabel('Accuracy')
+        plt.legend()
+        
+        # Save or display the plot
+        plt.savefig(f'architecture_{arch}_plot.png')  # Save the plot with a unique name
+        plt.show()  # Display the plot (remove this line if you want to save only)
