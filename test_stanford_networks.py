@@ -15,6 +15,19 @@ import torch
 from identity import compute_identity
 from utils import calculate_avg_shortest_path
 import logging
+import requests
+import zipfile
+from io import BytesIO
+from pathlib import Path
+import re
+
+linkss = ['http://vlado.fmf.uni-lj.si/pub/networks/data/GED/CSphd.ZIP', 'http://vlado.fmf.uni-lj.si/pub/networks/data/bio/Yeast/yeast.zip', 'http://vlado.fmf.uni-lj.si/pub/networks/data/collab/Geom.zip',
+         'http://vlado.fmf.uni-lj.si/pub/networks/data/collab/NetScience.zip', 'http://vlado.fmf.uni-lj.si/pub/networks/data/Erdos/Erdos02.net',
+         'http://www-personal.umich.edu/~mejn/netdata/karate.zip', 'http://www-personal.umich.edu/~mejn/netdata/lesmis.zip', 'http://www-personal.umich.edu/~mejn/netdata/adjnoun.zip'
+         'http://www-personal.umich.edu/~mejn/netdata/football.zip', 'http://www-personal.umich.edu/~mejn/netdata/dolphins.zip',
+         'http://www-personal.umich.edu/~mejn/netdata/polbooks.zip',
+        'http://www-personal.umich.edu/~mejn/netdata/power.zip', 'http://www-personal.umich.edu/~mejn/netdata/hep-th.zip',
+         'http://www-personal.umich.edu/~mejn/netdata/netscience.zip']
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Testing Stanford Networks")
@@ -207,7 +220,7 @@ def radar_plot(ans, names, output_path, feat_type, param):
         plt.show()
         plt.savefig('{}/radar{}_{}.png'.format(output_path, names[i], feat_type))
 
-def test_networks(model, args, param):
+def test_networks(model, args, param, result):
     # Open the file in read mode
     ans = []
     names = []
@@ -229,13 +242,196 @@ def test_networks(model, args, param):
                     names.append(name[:-7])
                     print()
             torch.cuda.empty_cache()
+
+    for file_path in result:
+        graph, name = read_graph(file_path)
+        ans.append((test_network_diff_nfeat(model, graph, name, args['device'], args['feat_type'], args['k'], param))[0].tolist())
+        names.append(name)
+        torch.cuda.empty_cache()
+    
     index = [(args['architecture'], args['feat_type'], name) for name in names]
     index = pd.MultiIndex.from_tuples(index, names=['model', 'feat_type', 'network_name'])
     df = pd.DataFrame(ans, columns=list(param.keys()), index=index)
     df.to_csv("{}/stanford_output_testing.csv".format(args['output_path']), index=True)
     
     radar_plot(ans, names, args['output_path'], args['feat_type'], param)
-               
+
+def extract_name_from_string(input_string):
+    # Use case-insensitive regular expression to extract the last part of the path
+    match = re.search(r'([^/]+)\.(net|gml)$', input_string, re.IGNORECASE)
+
+    # Check if a match is found
+    if match:
+        name = match.group(1)
+        return name
+    else:
+        return None  # Return None if no match is found
+
+def download_and_extract(links, output_dir="/content/extracted_folders"):
+    os.makedirs(output_dir, exist_ok=True)
+
+    net_files = []
+
+    for link in links:
+        if link.lower().endswith('.net'):
+            # Download the .net file directly
+            response = requests.get(link)
+            net_file_path = os.path.join(output_dir, os.path.basename(link))
+            with open(net_file_path, 'wb') as net_file:
+                net_file.write(response.content)
+            net_files.append(net_file_path)
+        else:
+            # Download the ZIP file
+            response = requests.get(link)
+            zip_file = zipfile.ZipFile(BytesIO(response.content))
+
+            # Extract the ZIP file to the output directory
+            folder_name = os.path.join(output_dir, os.path.splitext(os.path.basename(link))[0])
+            zip_file.extractall(folder_name)
+
+            # Find the first .net file in the extracted folder
+            for root, dirs, files in os.walk(folder_name):
+                for file in files:
+                    if file.endswith(".net") or file.endswith('.gml'):
+                        net_files.append(os.path.join(root, file))
+                        break
+
+    return net_files
+
+def extract_numbers_from_string(input_string):
+    # Use regular expression to find all numbers in the string
+    numbers = list(map(int, re.findall(r'\d+', input_string)))
+
+    return numbers
+
+def create_graph(edges, num_nodes):
+    # Create an empty graph
+    graph = nx.Graph()
+
+    # Add nodes to the graph
+    graph.add_nodes_from(range(1, num_nodes + 1))
+
+    # Add edges to the graph
+    graph.add_edges_from(edges)
+
+    return graph
+
+def read_graph_gml_dataset(file_path):
+    # Read the GML file into a NetworkX graph
+    graph = nx.read_gml(file_path, destringizer=int, label='id')
+    name = extract_name_from_string(file_path)
+    # Remove all node attributes
+    for node in graph.nodes():
+        graph.nodes[node].clear()
+
+    # Remove all edge attributes
+    for edge in graph.edges():
+        graph.edges[edge].clear()
+
+    return graph, name
+
+def read_graph_pajek_datast(file_path):
+    # Variables to store the graph information
+    edges = []
+
+    # Flag to indicate when to start reading edges
+    reading_edges = False
+    reading_arclist = False
+    num_nodes = 0
+    name = extract_name_from_string(file_path)
+    # Read the file line by line
+    with open(file_path, 'r') as file:
+        for line in file:
+            line = line.lower()
+
+            if reading_edges:
+                # Read edges in the format "x y"
+                #x, y = map(int, line.split())
+                numbers = extract_numbers_from_string(line)
+                edges.append((numbers[0]-1, numbers[1]-1))
+            elif reading_arclist:
+                numbers = extract_numbers_from_string(line)
+                for i in range(1, len(numbers)):
+                    edges.append((numbers[0]-1, numbers[i]-1))
+            elif line.startswith("*edges"):
+                # Start reading edges
+                reading_edges = True
+            elif line.startswith("*arcslist"):
+                reading_arclist = True
+            elif line.startswith("*vertices"):
+                numbers = extract_numbers_from_string(line)
+                num_nodes = numbers[0]-1
+
+    # Create a graph using NetworkX
+    graph = create_graph(edges, num_nodes)
+
+    # You can now work with the 'graph' object using NetworkX functions
+    return graph, name
+
+def read_graph(file_path):
+    if file_path.endswith('.net'):
+        graph, name = read_graph_pajek_datast(file_path)
+    elif file_path.endswith('.gml'):
+        graph, name = read_graph_gml_dataset(file_path)
+
+    return graph, name
+
+def graph_statistics(result, draw = False):
+    # Open the file in read mode
+    names = []
+    nodes = []
+    edges = []
+    density = []
+    transitivity = []
+    trans_dens = []
+    avg_short_path = []
+    avg_degree = []
+
+    # Iterate over each line in the file
+    f = 0
+    for file_path in result:
+        graph, name = read_graph(file_path)
+        grpah2 = dgl.from_networkx(graph)
+        avg_short_path.append(calculate_avg_shortest_path(grpah2))
+        names.append(name)
+        density.append(nx.density(graph))
+        transitivity.append(nx.transitivity(graph))
+        nodes.append(graph.number_of_nodes())
+        edges.append(graph.number_of_edges())
+        trans_dens.append(transitivity[-1]/density[-1])
+        avg_degree.append(edges[-1]*2/nodes[-1])
+        if draw == True:
+            print("network name : "+names[-1])
+            print()
+            print('number of nodes : ',nodes[-1])
+            print('nuler of edges : ', edges[-1])
+            print('average_shortest_path', avg_short_path[-1])
+            print("transitivity : ",transitivity[-1])
+            print("density : ",density[-1])
+            graph = nx.Graph(graph)
+
+            hist = nx.degree_histogram(graph)
+            plt.plot(hist)
+            plt.xlabel("Degree")
+            plt.ylabel("Frequency")
+            plt.title("Degree Distribution")
+            plt.show()
+
+    data = {
+    "Name": names,
+    "Nodes": nodes,
+    "Edges": edges,
+    "Density": density,
+    "Transitivity": transitivity,
+    "Transitivity Density": trans_dens,
+    "Average Shortest Path": avg_short_path,
+    "Average Degree": avg_degree
+    }
+    df = pd.DataFrame(data)
+    df.to_csv('metrics_of_stanford_networks2.csv', index=False)
+
+
+    return names, density, transitivity, avg_short_path
 
 if __name__ == "__main__":
     
@@ -244,6 +440,8 @@ if __name__ == "__main__":
 
     if args2.dist_draw == True:
         stanford_degree_dist_plots()
+        result = download_and_extract(linkss)
+        graph_statistics(result, True)
     else:
         with open(args2.args_file, 'r') as f:
             args = json.load(f)
@@ -260,4 +458,7 @@ if __name__ == "__main__":
         ).to(args['device'])
         model.load_state_dict(torch.load(args2.model_weights_path))
         args['feat_type'] = args2.feat_type
-        test_networks(model, args, param)
+        result = download_and_extract(linkss)
+        test_networks(model, args, param, result)
+        
+        
