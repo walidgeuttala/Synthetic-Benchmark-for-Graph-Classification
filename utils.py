@@ -773,3 +773,51 @@ def draw_figures_scatters(df):
         # Save or display the plot
         plt.savefig(f'architecture_{arch}_plot.png')  # Save the plot with a unique name
         plt.show()  # Display the plot (remove this line if you want to save only)
+
+
+def draw_figures_scatters_2(df):
+    # Assuming your DataFrame is named 'df'
+    sns.set_style("whitegrid")
+
+    # Define the size of the plot
+    plt.figure(figsize=(14, 10))
+
+    # Get unique architecture values
+    unique_architectures = df['architecture'].unique()
+    unique_feat_types = df['feat_type'].unique()
+
+    # Get a color palette with different colors for each feat_type
+    palette = sns.color_palette('husl', n_colors=len(unique_feat_types))
+    line_styles = [False, (3, 3), (1, 1), (7, 1)]
+
+    # Create a separate plot for each architecture
+    for arch in unique_architectures:
+        filtered_data = df[df['architecture'] == arch]
+        plt.figure(figsize=(14, 10))  # Set size for the current plot
+
+        for i, feat in enumerate(unique_feat_types):
+            label = f'{arch} {feat}'
+
+            # Use a different color for each feat_type
+            color = palette[i]
+
+            sns.lineplot(x='hidden_dim', y='test_acc', data=filtered_data[filtered_data['feat_type'] == feat], marker='o', label=f'{label} (test_acc)', color=color, markersize=10, dashes=line_styles[i])
+            sns.lineplot(x='hidden_dim', y='second_test_acc', data=filtered_data[filtered_data['feat_type'] == feat], marker='^', label=f'{label} (second_test_acc)', color=color, markersize=10, dashes=line_styles[i])
+
+        plt.xscale('log', base=2)  # Set x-axis to logarithmic scale with base 2
+        plt.xlabel('Hidden Dimension (log2 scale)')
+
+        # Set the x-tick labels to powers of 2
+        min_hidden_dim = df['hidden_dim'].min()
+        max_hidden_dim = df['hidden_dim'].max()
+        x_ticks = [2 ** i for i in range(int(np.log2(min_hidden_dim)), int(np.log2(max_hidden_dim) + 1))]
+        plt.xticks(x_ticks, labels=[str(val) for val in x_ticks])
+
+        plt.ylabel('Accuracy')
+        plt.title(f'Architecture: {arch}')
+        plt.legend(title='Legend')
+        filename = f'{arch}_plot.png'
+        plt.savefig(filename)
+        plt.show()
+
+
