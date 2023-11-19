@@ -55,6 +55,12 @@ def parse_args():
         default='data',
         help="dataset path",
     )
+    parser.add_argument(
+        "--feat_type",
+        type=str,
+        default='ones_feat',
+        help="feature type",
+    )
 
     return parser.parse_args()
 
