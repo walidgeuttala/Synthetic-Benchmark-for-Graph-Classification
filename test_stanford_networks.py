@@ -457,7 +457,7 @@ if __name__ == "__main__":
             dropout=args['dropout'],
         ).to(args['device'])
         model.load_state_dict(torch.load(args2.model_weights_path))
-        args['feat_type'] = args2.feat_type
+        #args['feat_type'] = args2.feat_type
         result = download_and_extract(linkss)
         test_networks(model, args, param, result)
         
