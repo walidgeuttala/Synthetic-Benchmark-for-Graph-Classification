@@ -252,7 +252,7 @@ def test_networks(model, args, param, result):
     index = [(args['architecture'], args['feat_type'], name) for name in names]
     index = pd.MultiIndex.from_tuples(index, names=['model', 'feat_type', 'network_name'])
     df = pd.DataFrame(ans, columns=list(param.keys()), index=index)
-    df.to_csv("{}/stanford_output_testing.csv".format(args['output_path']), index=True)
+    df.to_csv("{}/{}_stanford_output_testing.csv".format(args['output_path'], args['feat_type']), index=True)
     
     radar_plot(ans, names, args['output_path'], args['feat_type'], param)
 
