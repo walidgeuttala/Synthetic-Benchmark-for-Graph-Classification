@@ -374,7 +374,7 @@ def read_graph(file_path):
     elif file_path.endswith('.gml'):
         graph, name = read_graph_gml_dataset(file_path)
 
-    return graph, name
+    return dgl.from_networkx(graph), name
 
 def graph_statistics(result, draw = False):
     # Open the file in read mode
