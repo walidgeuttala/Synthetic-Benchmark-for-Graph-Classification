@@ -21,7 +21,7 @@ from io import BytesIO
 from pathlib import Path
 import re
 from main import parse_args
-linkss = [ 'http://vlado.fmf.uni-lj.si/pub/networks/data/bio/Yeast/yeast.zip', 'http://vlado.fmf.uni-lj.si/pub/networks/data/collab/Geom.zip',
+linkss = ['http://vlado.fmf.uni-lj.si/pub/networks/data/GED/CSphd.ZIP', 'http://vlado.fmf.uni-lj.si/pub/networks/data/bio/Yeast/yeast.zip', 'http://vlado.fmf.uni-lj.si/pub/networks/data/collab/Geom.zip',
          'http://vlado.fmf.uni-lj.si/pub/networks/data/collab/NetScience.zip', 'http://vlado.fmf.uni-lj.si/pub/networks/data/Erdos/Erdos02.net',
          'http://www-personal.umich.edu/~mejn/netdata/karate.zip', 'http://www-personal.umich.edu/~mejn/netdata/lesmis.zip', 'http://www-personal.umich.edu/~mejn/netdata/adjnoun.zip',
          'http://www-personal.umich.edu/~mejn/netdata/football.zip', 'http://www-personal.umich.edu/~mejn/netdata/dolphins.zip',
@@ -325,8 +325,8 @@ def read_graph_gml_dataset(file_path):
         graph.nodes[node].clear()
 
     # Remove all edge attributes
-    for edge in graph.edges():
-        graph.edges[edge].clear()
+    #for edge in graph.edges():
+    #   graph.edges[edge].clear()
 
     return graph, name
 
