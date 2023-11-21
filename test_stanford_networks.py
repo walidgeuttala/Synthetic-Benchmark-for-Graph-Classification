@@ -62,7 +62,7 @@ def parse_args2():
         help="feature type",
     )
 
-    return parser.parse_args2()
+    return parser.parse_args()
 
 def stanford_degree_dist_plots(draw = True):
     # Open the file in read mode
