@@ -459,7 +459,6 @@ if __name__ == "__main__":
         model.load_state_dict(torch.load(args2.model_weights_path))
         #args['feat_type'] = args2.feat_type
         result = download_and_extract(linkss)
-        print(result)
-        #test_networks(model, args, param, result)
+        test_networks(model, args, param, result)
         
         
