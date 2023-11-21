@@ -23,7 +23,7 @@ import re
 
 linkss = ['http://vlado.fmf.uni-lj.si/pub/networks/data/GED/CSphd.ZIP', 'http://vlado.fmf.uni-lj.si/pub/networks/data/bio/Yeast/yeast.zip', 'http://vlado.fmf.uni-lj.si/pub/networks/data/collab/Geom.zip',
          'http://vlado.fmf.uni-lj.si/pub/networks/data/collab/NetScience.zip', 'http://vlado.fmf.uni-lj.si/pub/networks/data/Erdos/Erdos02.net',
-         'http://www-personal.umich.edu/~mejn/netdata/karate.zip', 'http://www-personal.umich.edu/~mejn/netdata/lesmis.zip', 'http://www-personal.umich.edu/~mejn/netdata/adjnoun.zip'
+         'http://www-personal.umich.edu/~mejn/netdata/karate.zip', 'http://www-personal.umich.edu/~mejn/netdata/lesmis.zip', 'http://www-personal.umich.edu/~mejn/netdata/adjnoun.zip',
          'http://www-personal.umich.edu/~mejn/netdata/football.zip', 'http://www-personal.umich.edu/~mejn/netdata/dolphins.zip',
          'http://www-personal.umich.edu/~mejn/netdata/polbooks.zip',
         'http://www-personal.umich.edu/~mejn/netdata/power.zip', 'http://www-personal.umich.edu/~mejn/netdata/hep-th.zip',
@@ -267,7 +267,7 @@ def extract_name_from_string(input_string):
     else:
         return None  # Return None if no match is found
 
-def download_and_extract(links, output_dir="/content/extracted_folders"):
+def download_and_extract(links, output_dir="extracted_folders"):
     os.makedirs(output_dir, exist_ok=True)
 
     net_files = []
