@@ -20,7 +20,7 @@ import zipfile
 from io import BytesIO
 from pathlib import Path
 import re
-
+from main import parse_args
 linkss = ['http://vlado.fmf.uni-lj.si/pub/networks/data/GED/CSphd.ZIP', 'http://vlado.fmf.uni-lj.si/pub/networks/data/bio/Yeast/yeast.zip', 'http://vlado.fmf.uni-lj.si/pub/networks/data/collab/Geom.zip',
          'http://vlado.fmf.uni-lj.si/pub/networks/data/collab/NetScience.zip', 'http://vlado.fmf.uni-lj.si/pub/networks/data/Erdos/Erdos02.net',
          'http://www-personal.umich.edu/~mejn/netdata/karate.zip', 'http://www-personal.umich.edu/~mejn/netdata/lesmis.zip', 'http://www-personal.umich.edu/~mejn/netdata/adjnoun.zip',
@@ -29,7 +29,7 @@ linkss = ['http://vlado.fmf.uni-lj.si/pub/networks/data/GED/CSphd.ZIP', 'http://
         'http://www-personal.umich.edu/~mejn/netdata/power.zip', 'http://www-personal.umich.edu/~mejn/netdata/hep-th.zip',
          'http://www-personal.umich.edu/~mejn/netdata/netscience.zip']
 
-def parse_args():
+def parse_args2():
     parser = argparse.ArgumentParser(description="Testing Stanford Networks")
     parser.add_argument(
         "--model_weights_path",
@@ -62,7 +62,7 @@ def parse_args():
         help="feature type",
     )
 
-    return parser.parse_args()
+    return parser.parse_args2()
 
 def stanford_degree_dist_plots(draw = True):
     # Open the file in read mode
@@ -175,8 +175,8 @@ def test_network_diff_nfeat(model, graph, name, device, feat_type, k, param):
         graph.ndata['feat'] = compute_identity(torch.stack(graph.edges(), dim=0), graph.number_of_nodes(), k).float().to(device)
     else:
         graph.ndata['feat'] = graph.in_degrees().unsqueeze(1).float().to(device)
-    
-    logits, _ = model(graph)
+    args = parse_args()
+    logits, _ = model(graph, args)
     result = softmax(logits)
     ans.append(result[0])
     print('{} {} : '.format(name, feat_type), end='')
@@ -435,7 +435,7 @@ def graph_statistics(result, draw = False):
 
 if __name__ == "__main__":
     
-    args2 = parse_args()
+    args2 = parse_args2()
     param = torch.load('{}/parameters_generated_data.pth'.format(args2.dataset_path))
 
     if args2.dist_draw == True:
