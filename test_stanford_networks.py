@@ -267,7 +267,7 @@ def extract_name_from_string(input_string):
     else:
         return None  # Return None if no match is found
 
-def download_and_extract(links, output_dir="extracted_folders"):
+def download_and_extract(links, output_dir="./extracted_folders"):
     os.makedirs(output_dir, exist_ok=True)
 
     net_files = []
@@ -460,6 +460,6 @@ if __name__ == "__main__":
         #args['feat_type'] = args2.feat_type
         result = download_and_extract(linkss)
         print(result)
-        test_networks(model, args, param, result)
+        #test_networks(model, args, param, result)
         
         
