@@ -148,13 +148,13 @@ def main(args, seed, save=True):
     dataset = GraphDataset(device=args.device)
     dataset.load(args.dataset_path)
     if args.feat_type == 'ones_feat':
-        dataset.add_ones_feat()
+        dataset.add_ones_feat(args.k)
     elif args.feat_type == 'noise_feat':
-        dataset.add_noise_feat()
+        dataset.add_noise_feat(args.k)
     elif args.feat_type == "identity_feat":
         dataset.add_identity_feat(args.k)
     else:
-        dataset.add_degree_feat()
+        dataset.add_degree_feat(args.k)
 
     # add self loop. We add self loop for each graph here since the function "add_self_loop" does not
     # support batch graph.

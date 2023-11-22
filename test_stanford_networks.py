@@ -168,13 +168,15 @@ def test_network_diff_nfeat(model, graph, name, device, feat_type, k, param):
     print(name + ' number of nodes is : ', graph.num_nodes())
     print(name + ' number of edges is : ', graph.num_edges())
     if feat_type == 'ones_feat':
-        graph.ndata['feat'] = torch.ones(graph.num_nodes(), 1).float().to(device)
+        graph.ndata['feat'] = torch.ones(graph.num_nodes(), k).float().to(device)
     elif feat_type == 'noise_feat':
-        graph.ndata['feat'] = torch.randn(graph.num_nodes(), 1).float().to(device)
+        graph.ndata['feat'] = torch.randn(graph.num_nodes(), k).float().to(device)
     elif feat_type == 'identity_feat':
         graph.ndata['feat'] = compute_identity(torch.stack(graph.edges(), dim=0), graph.number_of_nodes(), k).float().to(device)
     else:
-        graph.ndata['feat'] = graph.in_degrees().unsqueeze(1).float().to(device)
+        degrees = graph.in_degrees().unsqueeze(1).float().to(device)
+        repeated_degrees = degrees.repeat(1, k)  # Repeat degree 'k' times
+        graph.ndata['feat'] = repeated_degrees
     args = parse_args()
     logits, _ = model(graph, args)
     result = softmax(logits)

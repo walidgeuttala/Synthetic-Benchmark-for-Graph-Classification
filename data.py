@@ -104,19 +104,21 @@ class GraphDataset(DGLDataset):
         info_path = os.path.join('data/info.pkl')
         return os.path.exists(graph_path) and os.path.exists(info_path)
 
-    def add_ones_feat(self):
+    def add_ones_feat(self, k):
         self.dim_nfeats = 1
         for g in self.graphs:
-            g.ndata['feat'] = torch.ones(g.num_nodes(), 1).float().to(self.device)
-    def add_noise_feat(self):
+            g.ndata['feat'] = torch.ones(g.num_nodes(), k).float().to(self.device)
+    def add_noise_feat(self, k):
         self.dim_nfeats = 1
         for g in self.graphs: 
-            g.ndata['feat'] = torch.randn(g.num_nodes(), 1).float().to(self.device)
+            g.ndata['feat'] = torch.randn(g.num_nodes(), k).float().to(self.device)
     
-    def add_degree_feat(self):
-        self.dim_nfeats = 1
+    def add_degree_feat(self, k):
+        self.dim_nfeats = k
         for g in self.graphs:
-            g.ndata['feat'] = g.in_degrees().unsqueeze(1).float().to(self.device)
+            degrees = g.in_degrees().unsqueeze(1).float().to(self.device)
+            repeated_degrees = degrees.repeat(1, k)  # Repeat degree 'k' times
+            g.ndata['feat'] = repeated_degrees
 
     def add_identity_feat(self, k):
         self.dim_nfeats = k
