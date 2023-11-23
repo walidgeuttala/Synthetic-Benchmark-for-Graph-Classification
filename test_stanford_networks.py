@@ -21,6 +21,9 @@ from io import BytesIO
 from pathlib import Path
 import re
 from main import parse_args
+
+list_names = [['CLUSTERDataset'], ['PATTERNDataset'], ['TreeGridDataset'], ['TreeCycleDataset']]
+
 linkss = ['http://vlado.fmf.uni-lj.si/pub/networks/data/GED/CSphd.ZIP', 'http://vlado.fmf.uni-lj.si/pub/networks/data/bio/Yeast/yeast.zip', 'http://vlado.fmf.uni-lj.si/pub/networks/data/collab/Geom.zip',
          'http://vlado.fmf.uni-lj.si/pub/networks/data/collab/NetScience.zip', 'http://vlado.fmf.uni-lj.si/pub/networks/data/Erdos/Erdos02.net',
          'http://www-personal.umich.edu/~mejn/netdata/karate.zip', 'http://www-personal.umich.edu/~mejn/netdata/lesmis.zip', 'http://www-personal.umich.edu/~mejn/netdata/adjnoun.zip',
@@ -64,6 +67,23 @@ def parse_args2():
 
     return parser.parse_args()
 
+def read_graph2(name):
+    #name.insert(0, 'data')
+    obj = dgl.data
+    for method_name in name:
+        obj = getattr(obj, method_name)
+    graph = obj()
+    if isinstance(graph, list):
+        print(len(graph))
+    graph = graph[0]
+    # Convert to NetworkX graph
+    #graph = dgl.to_homogeneous(graph)
+    
+    graph = dgl.to_homogeneous(graph)
+    #nx_graph = graph.to_networkx().to_undirected()
+   
+    return graph
+
 def stanford_degree_dist_plots(draw = True):
     # Open the file in read mode
     names = []
@@ -86,7 +106,7 @@ def stanford_degree_dist_plots(draw = True):
                 if f == 1:
                     f = 0
                 else:
-                    graph, name = download_Stanford_network(line[:-1])
+                    graph, name =  download_Stanford_network(line[:-1])
                     avg_short_path.append(calculate_avg_shortest_path(graph))
                     graph = dgl.to_networkx(graph)
                     graph = nx.Graph(graph)
@@ -113,6 +133,63 @@ def stanford_degree_dist_plots(draw = True):
                         plt.ylabel("Frequency")
                         plt.title("Degree Distribution")
                         plt.show()
+
+    for file_path in result:
+        graph, name = read_graph(file_path)
+        grpah2 = dgl.from_networkx(graph)
+        avg_short_path.append(calculate_avg_shortest_path(grpah2))
+        names.append(name)
+        density.append(nx.density(graph))
+        transitivity.append(nx.transitivity(graph))
+        nodes.append(graph.number_of_nodes())
+        edges.append(graph.number_of_edges())
+        trans_dens.append(transitivity[-1]/density[-1])
+        avg_degree.append(edges[-1]*2/nodes[-1])
+        if draw == True:
+            print("network name : "+names[-1])
+            print()
+            print('number of nodes : ',nodes[-1])
+            print('nuler of edges : ', edges[-1])
+            print('average_shortest_path', avg_short_path[-1])
+            print("transitivity : ",transitivity[-1])
+            print("density : ",density[-1])
+            graph = nx.Graph(graph)
+
+            degrees = [val for (node, val) in graph.degree()]
+            plt.hist(degrees, bins=100)  # Adjust bins as needed
+            plt.xlabel("Degree")
+            plt.ylabel("Frequency")
+            plt.title("Degree Distribution")
+            plt.show()
+
+    for file_path in list_names:
+        graph = read_graph2(file_path)
+        name = file_path[-1]
+        grpah2 = dgl.from_networkx(graph)
+        avg_short_path.append(calculate_avg_shortest_path(grpah2))
+        names.append(name)
+        density.append(nx.density(graph))
+        transitivity.append(nx.transitivity(graph))
+        nodes.append(graph.number_of_nodes())
+        edges.append(graph.number_of_edges())
+        trans_dens.append(transitivity[-1]/density[-1])
+        avg_degree.append(edges[-1]*2/nodes[-1])
+        if draw == True:
+            print("network name : "+names[-1])
+            print()
+            print('number of nodes : ',nodes[-1])
+            print('nuler of edges : ', edges[-1])
+            print('average_shortest_path', avg_short_path[-1])
+            print("transitivity : ",transitivity[-1])
+            print("density : ",density[-1])
+            graph = nx.Graph(graph)
+
+            degrees = [val for (node, val) in graph.degree()]
+            plt.hist(degrees, bins=100)  # Adjust bins as needed
+            plt.xlabel("Degree")
+            plt.ylabel("Frequency")
+            plt.title("Degree Distribution")
+            plt.show()
 
     data = {
     "Name": names,
@@ -390,7 +467,6 @@ def graph_statistics(result, draw = False):
     avg_degree = []
 
     # Iterate over each line in the file
-    f = 0
     for file_path in result:
         graph, name = read_graph(file_path)
         grpah2 = dgl.from_networkx(graph)
@@ -418,6 +494,9 @@ def graph_statistics(result, draw = False):
             plt.ylabel("Frequency")
             plt.title("Degree Distribution")
             plt.show()
+
+    for list_name in list_names:
+
 
     data = {
     "Name": names,
