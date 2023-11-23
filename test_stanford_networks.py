@@ -466,7 +466,6 @@ def graph_statistics(result, draw = False):
     avg_short_path = []
     avg_degree = []
 
-    # Iterate over each line in the file
     for file_path in result:
         graph, name = read_graph(file_path)
         grpah2 = dgl.from_networkx(graph)
@@ -488,8 +487,37 @@ def graph_statistics(result, draw = False):
             print("density : ",density[-1])
             graph = nx.Graph(graph)
 
-            hist = nx.degree_histogram(graph)
-            plt.plot(hist)
+            degrees = [val for (node, val) in graph.degree()]
+            plt.hist(degrees, bins=100)  # Adjust bins as needed
+            plt.xlabel("Degree")
+            plt.ylabel("Frequency")
+            plt.title("Degree Distribution")
+            plt.show()
+
+    for file_path in list_names:
+        graph = read_graph2(file_path)
+        name = file_path[-1]
+        grpah2 = dgl.from_networkx(graph)
+        avg_short_path.append(calculate_avg_shortest_path(grpah2))
+        names.append(name)
+        density.append(nx.density(graph))
+        transitivity.append(nx.transitivity(graph))
+        nodes.append(graph.number_of_nodes())
+        edges.append(graph.number_of_edges())
+        trans_dens.append(transitivity[-1]/density[-1])
+        avg_degree.append(edges[-1]*2/nodes[-1])
+        if draw == True:
+            print("network name : "+names[-1])
+            print()
+            print('number of nodes : ',nodes[-1])
+            print('nuler of edges : ', edges[-1])
+            print('average_shortest_path', avg_short_path[-1])
+            print("transitivity : ",transitivity[-1])
+            print("density : ",density[-1])
+            graph = nx.Graph(graph)
+
+            degrees = [val for (node, val) in graph.degree()]
+            plt.hist(degrees, bins=100)  # Adjust bins as needed
             plt.xlabel("Degree")
             plt.ylabel("Frequency")
             plt.title("Degree Distribution")
@@ -517,9 +545,10 @@ if __name__ == "__main__":
     param = torch.load('{}/parameters_generated_data.pth'.format(args2.dataset_path))
 
     if args2.dist_draw == True:
+        print('hello')
         result = download_and_extract(linkss)
-        stanford_degree_dist_plots(result)
-        #graph_statistics(result, True)
+        #stanford_degree_dist_plots(result)
+        graph_statistics(result, True)
     else:
         with open(args2.args_file, 'r') as f:
             args = json.load(f)
