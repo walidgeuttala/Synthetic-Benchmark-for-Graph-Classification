@@ -84,7 +84,7 @@ def read_graph2(name):
    
     return graph
 
-def stanford_degree_dist_plots(draw = True):
+def stanford_degree_dist_plots(result, draw = True):
     # Open the file in read mode
     names = []
     nodes = []
@@ -495,9 +495,6 @@ def graph_statistics(result, draw = False):
             plt.title("Degree Distribution")
             plt.show()
 
-    for list_name in list_names:
-
-
     data = {
     "Name": names,
     "Nodes": nodes,
@@ -520,9 +517,9 @@ if __name__ == "__main__":
     param = torch.load('{}/parameters_generated_data.pth'.format(args2.dataset_path))
 
     if args2.dist_draw == True:
-        stanford_degree_dist_plots()
         result = download_and_extract(linkss)
-        graph_statistics(result, True)
+        stanford_degree_dist_plots(result)
+        #graph_statistics(result, True)
     else:
         with open(args2.args_file, 'r') as f:
             args = json.load(f)
