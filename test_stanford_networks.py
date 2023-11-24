@@ -553,10 +553,9 @@ if __name__ == "__main__":
     param = torch.load('{}/parameters_generated_data.pth'.format(args2.dataset_path))
 
     if args2.dist_draw == True:
-        print('hello')
         result = download_and_extract(linkss)
-        #stanford_degree_dist_plots(result)
-        graph_statistics(result, True)
+        stanford_degree_dist_plots(result)
+        #graph_statistics(result, True)
     else:
         with open(args2.args_file, 'r') as f:
             args = json.load(f)
