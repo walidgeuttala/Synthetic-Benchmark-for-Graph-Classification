@@ -139,6 +139,7 @@ def stanford_degree_dist_plots(result, draw = True):
                         plt.ylabel("Frequency")
                         plt.title("Degree Distribution")
                         plt.show()
+                        plt.savefig('./degree_dist_{}.png'.format(name))
 
     for file_path in result:
         graph, name = read_graph(file_path)
@@ -167,6 +168,7 @@ def stanford_degree_dist_plots(result, draw = True):
             plt.ylabel("Frequency")
             plt.title("Degree Distribution")
             plt.show()
+            plt.savefig('./degree_dist_{}.png'.format(name))
 
     for file_path in list_names:
         graph2 = read_graph2(file_path)
@@ -197,6 +199,7 @@ def stanford_degree_dist_plots(result, draw = True):
             plt.ylabel("Frequency")
             plt.title("Degree Distribution")
             plt.show()
+            plt.savefig('./degree_dist_{}.png'.format(name))
 
     data = {
     "Name": names,
