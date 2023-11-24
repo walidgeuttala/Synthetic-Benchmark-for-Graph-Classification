@@ -85,7 +85,7 @@ def read_graph2(name):
     #graph = dgl.to_homogeneous(graph)
     
     graph = dgl.to_homogeneous(graph)
-    graph = make_graph_bidirectional(graph)
+    #graph = make_graph_bidirectional(graph)
     #nx_graph = graph.to_networkx().to_undirected()
    
     return graph
@@ -459,7 +459,7 @@ def read_graph(file_path):
     elif file_path.endswith('.gml'):
         graph, name = read_graph_gml_dataset(file_path)
 
-    return dgl.from_networkx(graph), name
+    return graph, name
 
 def graph_statistics(result, draw = False):
     # Open the file in read mode
@@ -473,8 +473,8 @@ def graph_statistics(result, draw = False):
     avg_degree = []
 
     for file_path in result:
-        graph2, name = read_graph(file_path)
-        graph = graph2.to_networkx()
+        graph, name = read_graph(file_path)
+        grpah2 = dgl.from_networkx(graph)
         avg_short_path.append(calculate_avg_shortest_path(grpah2))
         names.append(name)
         density.append(nx.density(graph))
@@ -501,8 +501,7 @@ def graph_statistics(result, draw = False):
             plt.show()
 
     for file_path in list_names:
-        graph2 = read_graph2(file_path)
-        graph = graph2.to_networkx()
+        graph = read_graph2(file_path)
         name = file_path[-1]
         grpah2 = dgl.from_networkx(graph)
         avg_short_path.append(calculate_avg_shortest_path(grpah2))
