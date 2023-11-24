@@ -133,8 +133,8 @@ def stanford_degree_dist_plots(result, draw = True):
                         print("density : ",density[-1])
                         graph = nx.Graph(graph)
                         
-                        hist = nx.degree_histogram(graph)
-                        plt.plot(hist)
+                        degrees = [val for (node, val) in graph.degree()]
+                        plt.hist(degrees, bins=100)  # Adjust bins as needed
                         plt.xlabel("Degree")
                         plt.ylabel("Frequency")
                         plt.title("Degree Distribution")
