@@ -169,10 +169,11 @@ def stanford_degree_dist_plots(result, draw = True):
             plt.show()
 
     for file_path in list_names:
-        graph = read_graph2(file_path)
+        graph2 = read_graph2(file_path)
         name = file_path[-1]
-        grpah2 = dgl.from_networkx(graph)
-        avg_short_path.append(calculate_avg_shortest_path(grpah2))
+        graph = dgl.to_networkx(graph2)
+        graph = nx.Graph(graph)
+        avg_short_path.append(calculate_avg_shortest_path(graph2))
         names.append(name)
         density.append(nx.density(graph))
         transitivity.append(nx.transitivity(graph))
