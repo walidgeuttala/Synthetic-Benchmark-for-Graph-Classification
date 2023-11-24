@@ -66,6 +66,11 @@ def parse_args2():
     )
 
     return parser.parse_args()
+def make_graph_bidirectional(graph):
+    src, dst = graph.edges()
+    reversed_edges = (dst, src)  # Reverse the edges
+    new_src, new_dst = graph.edges() + reversed_edges
+    return dgl.graph((new_src, new_dst))
 
 def read_graph2(name):
     #name.insert(0, 'data')
@@ -80,6 +85,7 @@ def read_graph2(name):
     #graph = dgl.to_homogeneous(graph)
     
     graph = dgl.to_homogeneous(graph)
+    graph = make_graph_bidirectional(graph)
     #nx_graph = graph.to_networkx().to_undirected()
    
     return graph
@@ -467,8 +473,8 @@ def graph_statistics(result, draw = False):
     avg_degree = []
 
     for file_path in result:
-        graph, name = read_graph(file_path)
-        grpah2 = dgl.from_networkx(graph)
+        graph2, name = read_graph(file_path)
+        graph = graph2.to_networkx()
         avg_short_path.append(calculate_avg_shortest_path(grpah2))
         names.append(name)
         density.append(nx.density(graph))
@@ -495,7 +501,8 @@ def graph_statistics(result, draw = False):
             plt.show()
 
     for file_path in list_names:
-        graph = read_graph2(file_path)
+        graph2 = read_graph2(file_path)
+        graph = graph2.to_networkx()
         name = file_path[-1]
         grpah2 = dgl.from_networkx(graph)
         avg_short_path.append(calculate_avg_shortest_path(grpah2))
