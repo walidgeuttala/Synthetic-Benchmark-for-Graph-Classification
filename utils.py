@@ -649,7 +649,7 @@ def test2(model: torch.nn.Module, loader, device, args, trial, e, if_test):
         # Calculate predictions and loss
         out, _ = model(batch_graphs)
         pred = out.argmax(dim=1)
-        loss += F.nll_loss(out, batch_labels, reduction="sum").item()
+        loss += torch.nn.F.nll_loss(out, batch_labels, reduction="sum").item()
         correct += pred.eq(batch_labels).sum().item()
 
         # Delete variables that are no longer needed
