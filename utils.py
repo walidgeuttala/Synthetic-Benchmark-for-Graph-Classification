@@ -20,19 +20,19 @@ import seaborn as sns
 import json
 
 output_combinations = {
-    1: ("identity feat", "gnn"),
+    1: ("identity feat", "gat"),
     2: ("identity feat", "hierarchical"),
     3: ("identity feat", "gin"),
     4: ("identity feat", "global"),
-    5: ("degree feat", "gnn"),
+    5: ("degree feat", "gat"),
     6: ("degree feat", "hierarchical"),
     7: ("degree feat", "gin"),
     8: ("degree feat", "global"),
-    9: ("noise feat", "gnn"),
+    9: ("noise feat", "gat"),
     10: ("noise feat", "hierarchical"),
     11: ("noise feat", "gin"),
     12: ("noise feat", "global"),
-    13: ("ones feat", "gnn"),
+    13: ("ones feat", "gat"),
     14: ("ones feat", "hierarchical"),
     15: ("ones feat", "gin"),
     16: ("ones feat", "global")
