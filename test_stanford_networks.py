@@ -342,7 +342,7 @@ def test_networks(model, args, param, result):
     
     for list_name in list_names:
         graph = read_graph2(list_name)
-        name = list_name
+        name = list_name[-1]
         ans.append((test_network_diff_nfeat(model, graph, name, args['device'], args['feat_type'], args['k'], param))[0].tolist())
         names.append(name)
         torch.cuda.empty_cache()
