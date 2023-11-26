@@ -335,9 +335,18 @@ def test_networks(model, args, param, result):
 
     for file_path in result:
         graph, name = read_graph(file_path)
+        graph = dgl.from_networkx(graph)
         ans.append((test_network_diff_nfeat(model, graph, name, args['device'], args['feat_type'], args['k'], param))[0].tolist())
         names.append(name)
         torch.cuda.empty_cache()
+    
+    for list_name in list_names:
+        graph = read_graph2(list_name)
+        name = list_name
+        ans.append((test_network_diff_nfeat(model, graph, name, args['device'], args['feat_type'], args['k'], param))[0].tolist())
+        names.append(name)
+        torch.cuda.empty_cache()
+
     
     index = [(args['architecture'], args['feat_type'], name) for name in names]
     index = pd.MultiIndex.from_tuples(index, names=['model', 'feat_type', 'network_name'])
