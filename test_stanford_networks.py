@@ -247,34 +247,39 @@ def download_Stanford_network(url, save_as = "/txt.txt"):
 
 @torch.no_grad()
 def test_network_diff_nfeat(model, graph, name, device, feat_type, k, param):
-    model.eval()
-    ans = [] 
-    softmax = torch.nn.Softmax(dim=1)
-    graph = dgl.add_self_loop(graph)
-    graph = graph.to(device)
-    print(name + ' number of nodes is : ', graph.num_nodes())
-    print(name + ' number of edges is : ', graph.num_edges())
-    if feat_type == 'ones_feat':
-        graph.ndata['feat'] = torch.ones(graph.num_nodes(), 1).float().to(device)
-    elif feat_type == 'noise_feat':
-        graph.ndata['feat'] = torch.randn(graph.num_nodes(), 1).float().to(device)
-    elif feat_type == 'identity_feat':
-        graph.ndata['feat'] = compute_identity(torch.stack(graph.edges(), dim=0), graph.number_of_nodes(), k).float().to(device)
-    else:
-        k = 1
-        degrees = graph.in_degrees().unsqueeze(1).float().to(device)
-        repeated_degrees = degrees.repeat(1, k)  # Repeat degree 'k' times
-        graph.ndata['feat'] = repeated_degrees
-    args = parse_args()
-    logits, _ = model(graph, args)
-    result = softmax(logits)
-    ans.append(result[0])
-    print('{} {} : '.format(name, feat_type), end='')
-    for i, key in enumerate(list(param.keys())):
-        print('{}. {:.4f} '.format(key, result[0][i]), end='')
-    print()
+    try:
+        model.eval()
+        ans = [] 
+        softmax = torch.nn.Softmax(dim=1)
+        graph = dgl.add_self_loop(graph)
+        graph = graph.to(device)
+        print(name + ' number of nodes is : ', graph.num_nodes())
+        print(name + ' number of edges is : ', graph.num_edges())
+        if feat_type == 'ones_feat':
+            graph.ndata['feat'] = torch.ones(graph.num_nodes(), 1).float().to(device)
+        elif feat_type == 'noise_feat':
+            graph.ndata['feat'] = torch.randn(graph.num_nodes(), 1).float().to(device)
+        elif feat_type == 'identity_feat':
+            graph.ndata['feat'] = compute_identity(torch.stack(graph.edges(), dim=0), graph.number_of_nodes(), k).float().to(device)
+        else:
+            k = 1
+            degrees = graph.in_degrees().unsqueeze(1).float().to(device)
+            repeated_degrees = degrees.repeat(1, k)  # Repeat degree 'k' times
+            graph.ndata['feat'] = repeated_degrees
+        args = parse_args()
+        logits, _ = model(graph, args)
+        result = softmax(logits)
+        ans.append(result[0])
+        print('{} {} : '.format(name, feat_type), end='')
+        for i, key in enumerate(list(param.keys())):
+            print('{}. {:.4f} '.format(key, result[0][i]), end='')
+        print()
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        ans = None  # Set ans to None in case of an error
     
     return ans
+
 
 def radar_plot(ans, names, output_path, feat_type, param):
     ans = torch.tensor(ans)
@@ -328,23 +333,29 @@ def test_networks(model, args, param, result):
                     f = 0
                 else:
                     graph, name = download_Stanford_network(line[:-1])
-                    ans.append((test_network_diff_nfeat(model, graph, name, args['device'], args['feat_type'], args['k'], param))[0].tolist())
-                    names.append(name[:-7])
+                    value = test_network_diff_nfeat(model, graph, name, args['device'], args['feat_type'], args['k'], param)
+                    if value != None:
+                        ans.append(value[0].tolist())
+                        names.append(name[:-7])
                     print()
             torch.cuda.empty_cache()
 
     for file_path in result:
         graph, name = read_graph(file_path)
         graph = dgl.from_networkx(graph)
-        ans.append((test_network_diff_nfeat(model, graph, name, args['device'], args['feat_type'], args['k'], param))[0].tolist())
-        names.append(name)
+        value = test_network_diff_nfeat(model, graph, name, args['device'], args['feat_type'], args['k'], param)
+        if value != None:
+            ans.append(value[0].tolist())
+            names.append(name)
         torch.cuda.empty_cache()
     
     for list_name in list_names:
         graph = read_graph2(list_name)
         name = list_name[-1]
-        ans.append((test_network_diff_nfeat(model, graph, name, args['device'], args['feat_type'], args['k'], param))[0].tolist())
-        names.append(name)
+        value = test_network_diff_nfeat(model, graph, name, args['device'], args['feat_type'], args['k'], param)
+        if value != None:
+            ans.append(value[0].tolist())
+            names.append(name)
         torch.cuda.empty_cache()
 
     
