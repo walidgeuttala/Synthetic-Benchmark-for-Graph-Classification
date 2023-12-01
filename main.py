@@ -153,8 +153,10 @@ def main(args, seed, save=True):
         dataset.add_noise_feat(args.k)
     elif args.feat_type == "identity_feat":
         dataset.add_identity_feat(args.k)
-    else:
+    elif args.feat_type == 'degree_feat':
         dataset.add_degree_feat(args.k)
+    else:
+        dataset.add_normlized_degree_feat(args.k)
 
     # add self loop. We add self loop for each graph here since the function "add_self_loop" does not
     # support batch graph.
