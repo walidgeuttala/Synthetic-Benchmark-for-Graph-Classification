@@ -21,7 +21,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="GNN for network classification", allow_abbrev=False)
     parser.add_argument("--dataset", type=str, default="dataset", help="just naming of the data added to the info after training the model")
     parser.add_argument("--plot_statistics", type=bool, default=False, help="do plots about acc/loss/boxplot")
-    parser.add_argument("--feat_type", type=str, default="ones_feat", choices=["ones_feat", "noise_feat", "degree_feat", "identity_feat"], help="ones_feat/noies_feat/degree_feat/identity_feat")
+    parser.add_argument("--feat_type", type=str, default="ones_feat", choices=["ones_feat", "noise_feat", "degree_feat", "identity_feat", "normlized_degree_feat"], help="ones_feat/noies_feat/degree_feat/identity_feat")
     parser.add_argument("--batch_size", type=int, default=100, help="batch size")
     parser.add_argument("--lr", type=float, default=0.01, help="learning rate")
     parser.add_argument("--weight_decay", type=float, default=0.0, help="weight decay of the learning rate over epochs for the optimizer")
