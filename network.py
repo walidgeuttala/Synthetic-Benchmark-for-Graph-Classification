@@ -252,9 +252,9 @@ class GAT(torch.nn.Module):
 
            # hidden_rep.append(feat)
 
-        if args.activate == True:
-            with h5py.File("{}/save_hidden_node_feat_test_trial{}.h5".format(args.output_path, args.current_trial), 'a') as hf:
-                hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=feat.cpu().numpy())
+        # if args.activate == True:
+        #    with h5py.File("{}/save_hidden_node_feat_test_trial{}.h5".format(args.output_path, args.current_trial), 'a') as hf:
+        #        hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=feat.cpu().numpy())
 
         pooled_h = torch.cat(pooled_h_list, dim=-1)
         pooled_hh = self.before_last_linear(pooled_h)
