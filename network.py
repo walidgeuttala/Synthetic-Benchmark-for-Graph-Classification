@@ -260,7 +260,7 @@ class GAT(torch.nn.Module):
         pooled_hh = self.before_last_linear(pooled_h)
         pooled_h = self.last_linear(pooled_hh)
 
-        return getattr(F, self.output_activation)(pooled_h, dim=-1), pooled_hhv
+        return getattr(F, self.output_activation)(pooled_h, dim=-1), pooled_hh
 
 class MLP(nn.Module):
     """Construct two-layer MLP-type aggreator for GIN model"""
