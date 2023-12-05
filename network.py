@@ -197,16 +197,18 @@ class GAT(torch.nn.Module):
         self.input_dim = in_dim
         self.output_dim = out_dim
         self.output_activation = output_activation
-        self.ann_input_shape = num_layers * hidden_dim 
+        self.ann_input_shape = num_layers * hidden_dim
         self.num_heads = 4
+        self.batch_norms = []
         # Create GAT layers
         for layer in range(num_layers):  # excluding the input layer
             if layer == 0:
                 conv = GATv2Conv(in_feats=self.input_dim,out_feats=hidden_dim, num_heads=self.num_heads, activation=nn.ReLU())
             else:
                 conv = GATv2Conv(in_feats=hidden_dim, out_feats=hidden_dim, num_heads=self.num_heads, activation=nn.ReLU())
+            self.batch_norms.append(nn.BatchNorm1d(hidden_dim))
             self.layers.append(conv)
-        
+
         # Create linear prediction layers
         self.linear_prediction = torch.nn.ModuleList()
         for layer in range(num_layers):
@@ -222,7 +224,7 @@ class GAT(torch.nn.Module):
                                         torch.nn.ReLU(),
                                         torch.nn.BatchNorm1d(out_dim))
         # Create sum pooling module
-        
+
         self.pool = SumPooling()
 
     def forward(self, graph: dgl.DGLGraph, args):
@@ -237,26 +239,28 @@ class GAT(torch.nn.Module):
             score_over_layer (torch.Tensor): Output prediction
 
         """
-        # list of hidden representation at each layer 
+        # list of hidden representation at each layer
         feat = graph.ndata["feat"]
         # Compute hidden representations at each layer
         pooled_h_list = []
         for i, layer in enumerate(self.layers):
             feat = layer(graph, feat).mean(1)
+            self.batch_norms[i] = self.batch_norms[i].to('cuda')
+            feat = self.batch_norms[i](feat)
             pooled_h = self.pool(graph, feat)
             pooled_h_list.append(self.linear_prediction[i](pooled_h))
-            
+
            # hidden_rep.append(feat)
-        
+
         if args.activate == True:
             with h5py.File("{}/save_hidden_node_feat_test_trial{}.h5".format(args.output_path, args.current_trial), 'a') as hf:
                 hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=feat.cpu().numpy())
-        
+
         pooled_h = torch.cat(pooled_h_list, dim=-1)
         pooled_hh = self.before_last_linear(pooled_h)
         pooled_h = self.last_linear(pooled_hh)
 
-        return getattr(F, self.output_activation)(pooled_h, dim=-1), pooled_hh
+        return getattr(F, self.output_activation)(pooled_h, dim=-1), pooled_hhv
 
 class MLP(nn.Module):
     """Construct two-layer MLP-type aggreator for GIN model"""
