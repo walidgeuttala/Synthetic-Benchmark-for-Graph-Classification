@@ -219,16 +219,17 @@ def stanford_degree_dist_plots(result, draw = True):
 
 
 
-def download_Stanford_network(url, save_as = "/txt.txt"):
+def download_Stanford_network(url, save_as = "txt.txt"):
     
     input_file = url.split("/")[-1]
-    subprocess.run(['wget', url, '-O', input_file])
+    if not os.path.exists(input_file):
+        subprocess.run(['wget', url, '-O', input_file])
     
     with gzip.open(input_file, 'rb') as f_in:
         with open(save_as, 'wb') as f_out:
             f_out.write(f_in.read())
     
-    os.remove(input_file)
+    #os.remove(input_file)
     
     data = np.loadtxt(save_as, dtype=int)
 
