@@ -29,7 +29,7 @@ class SAGPool(torch.nn.Module):
         super(SAGPool, self).__init__()
         self.in_dim = in_dim
         self.ratio = ratio
-        self.score_layer = conv_op(in_dim, 1)
+        self.score_layer = conv_op(in_dim, 1, allow_zero_in_degree=True)
         self.non_linearity = non_linearity
 
     def forward(self, graph: dgl.DGLGraph, feature: torch.Tensor):
@@ -60,7 +60,7 @@ class ConvPoolBlock(torch.nn.Module):
 
     def __init__(self, in_dim: int, out_dim: int, pool_ratio=0.8):
         super(ConvPoolBlock, self).__init__()
-        self.conv = GraphConv(in_dim, out_dim)
+        self.conv = GraphConv(in_dim, out_dim, allow_zero_in_degree=True)
         self.pool = SAGPool(out_dim, ratio=pool_ratio)
         self.avgpool = AvgPooling()
         self.maxpool = MaxPooling()

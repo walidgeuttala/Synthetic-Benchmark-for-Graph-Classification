@@ -114,7 +114,7 @@ class SAGNetworkGlobal(torch.nn.Module):
         for i in range(num_layers):
             _i_dim = in_dim if i == 0 else hidden_dim
             _o_dim = hidden_dim
-            convs.append(GraphConv(_i_dim, _o_dim))
+            convs.append(GraphConv(_i_dim, _o_dim, allow_zero_in_degree=True))
         self.convs = torch.nn.ModuleList(convs)
 
         concat_dim = num_layers * hidden_dim
@@ -203,9 +203,9 @@ class GAT(torch.nn.Module):
         # Create GAT layers
         for layer in range(num_layers):  # excluding the input layer
             if layer == 0:
-                conv = GATv2Conv(in_feats=self.input_dim,out_feats=hidden_dim, num_heads=self.num_heads, activation=nn.ReLU())
+                conv = GATv2Conv(in_feats=self.input_dim,out_feats=hidden_dim, num_heads=self.num_heads, activation=nn.ReLU(), allow_zero_in_degree=True)
             else:
-                conv = GATv2Conv(in_feats=hidden_dim, out_feats=hidden_dim, num_heads=self.num_heads, activation=nn.ReLU())
+                conv = GATv2Conv(in_feats=hidden_dim, out_feats=hidden_dim, num_heads=self.num_heads, activation=nn.ReLU(), allow_zero_in_degree=True)
             self.batch_norms.append(nn.BatchNorm1d(hidden_dim))
             self.layers.append(conv)
 

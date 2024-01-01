@@ -160,8 +160,8 @@ def main(args, seed, save=True):
 
     # add self loop. We add self loop for each graph here since the function "add_self_loop" does not
     # support batch graph.
-    for i in range(len(dataset)):
-        dataset.graphs[i] = dgl.add_self_loop(dataset.graphs[i])
+    # for i in range(len(dataset)):
+    #    dataset.graphs[i] = dgl.add_self_loop(dataset.graphs[i])
 
     num_training = int(len(dataset) * 0.8)
     num_val = int(len(dataset) * 0.1)
