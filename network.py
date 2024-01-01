@@ -133,9 +133,9 @@ class SAGNetworkGlobal(torch.nn.Module):
         for i in range(self.num_layers):
             feat = self.convs[i](graph, feat)
             conv_res.append(feat)
-        if args.activate == True:
-            with h5py.File("{}/save_hidden_node_feat_test_trial{}.h5".format(args.output_path, args.current_trial), 'a') as hf:
-                hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=conv_res[-1].cpu().numpy())
+        #if args.activate == True:
+        #    with h5py.File("{}/save_hidden_node_feat_test_trial{}.h5".format(args.output_path, args.current_trial), 'a') as hf:
+        #        hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=conv_res[-1].cpu().numpy())
         conv_res = torch.cat(conv_res, dim=-1)
         graph, feat, _ = self.pool(graph, conv_res)
         feat = torch.cat(
@@ -326,9 +326,9 @@ class GIN(nn.Module):
             hidden_rep.append(h)
         score_over_layer = 0
         
-        if args.activate == True:
-            with h5py.File("{}/save_hidden_node_feat_test_trial{}.h5".format(args.output_path, args.current_trial), 'a') as hf:
-                hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=hidden_rep[-1].cpu().numpy())
+        #if args.activate == True:
+        #    with h5py.File("{}/save_hidden_node_feat_test_trial{}.h5".format(args.output_path, args.current_trial), 'a') as hf:
+        #        hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=hidden_rep[-1].cpu().numpy())
 
 
         # perform graph sum pooling over all nodes in each layer
