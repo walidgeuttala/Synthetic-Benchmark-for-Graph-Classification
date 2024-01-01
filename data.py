@@ -110,13 +110,13 @@ class GraphDataset(DGLDataset):
         for g in self.graphs:
             g.ndata['feat'] = torch.ones(g.num_nodes(), k).float().to(self.device)
     def add_noise_feat(self, k):
-        #k = 1
+        k = 1
         self.dim_nfeats = k
         for g in self.graphs: 
             g.ndata['feat'] = torch.randn(g.num_nodes(), k).float().to(self.device)
     
     def add_degree_feat(self, k):
-        #k = 1
+        k = 1
         self.dim_nfeats = k
         for g in self.graphs:
             degrees = g.in_degrees().unsqueeze(1).float().to(self.device)
@@ -136,9 +136,9 @@ class GraphDataset(DGLDataset):
         return ans
 
     def add_normlized_degree_feat(self, k):
-        #k = 1
+        k = 1
         self.dim_nfeats = k
-        largest_degree = find_largest_degree_group_of_graphs()
+        largest_degree = self.find_largest_degree_group_of_graphs()
         for g in self.graphs:
             degrees = g.in_degrees().unsqueeze(1).float().to(self.device)
             repeated_degrees = degrees.repeat(1, k) / largest_degree # Repeat degree 'k' times
