@@ -113,7 +113,7 @@ class GraphDataset(DGLDataset):
         k = 1
         self.dim_nfeats = k
         for g in self.graphs: 
-            g.ndata['feat'] = torch.randn(g.num_nodes(), k).float().to(self.device)
+            g.ndata['feat'] = torch.rand(g.num_nodes(), k).float().to(self.device)
     
     def add_degree_feat(self, k):
         k = 1
