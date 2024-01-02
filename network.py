@@ -28,11 +28,11 @@ class GCNv2(nn.Module):
         for layer in range(num_layers):  # excluding the input layer
             if layer == 0:
                 self.gcnv2layers.append(
-                    GCN2Conv(in_dim, hidden_dim, allow_zero_in_degree=False)
+                    GCN2Conv(in_dim, hidden_dim, allow_zero_in_degree=True)
                 )  # set to True if learning epsilon
             else:
                 self.gcnv2layers.append(
-                    GCN2Conv(hidden_dim, hidden_dim, allow_zero_in_degree=False)
+                    GCN2Conv(hidden_dim, hidden_dim, allow_zero_in_degree=True)
                 )  # set to True if learning epsilon
 
             self.batch_norms.append(nn.BatchNorm1d(hidden_dim))
