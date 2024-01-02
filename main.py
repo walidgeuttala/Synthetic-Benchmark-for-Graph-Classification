@@ -25,7 +25,6 @@ def parse_args():
     parser.add_argument("--batch_size", type=int, default=100, help="batch size")
     parser.add_argument("--lr", type=float, default=0.01, help="learning rate")
     parser.add_argument("--weight_decay", type=float, default=0.0, help="weight decay of the learning rate over epochs for the optimizer")
-    parser.add_argument("--pool_ratio", type=float, default=0.25, help="pooling ratio")
     parser.add_argument("--hidden_dim", type=int, default=64, help="hidden size, number of neuron in every hidden layer but could change for currten type of networks")
     parser.add_argument("--dropout", type=float, default=0.5, help="dropout ratio")
     parser.add_argument("--epochs", type=int, default=100, help="max number of training epochs")
@@ -67,11 +66,10 @@ def parse_args():
         os.makedirs(args.output_path)
     if args.patience == -1:
         args.patience = args.epochs+1
-    name = "Data_{}_Hidden_{}_Arch_{}_Pool_{}_WeightDecay_{}_Lr_{}.log".format(
+    name = "Data_{}_Hidden_{}_Arch_{}_WeightDecay_{}_Lr_{}.log".format(
         args.dataset,
         args.hidden_dim,
         args.architecture,
-        args.pool_ratio,
         args.weight_decay,
         args.lr,
     ) 
@@ -198,7 +196,6 @@ def main(args, seed, save=True):
         hidden_dim=args.hidden_dim,
         out_dim=num_classes,
         num_layers=args.num_layers,
-        pool_ratio=args.pool_ratio,
         dropout=args.dropout,
         output_activation = args.output_activation
     ).to(device)
