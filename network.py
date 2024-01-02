@@ -53,7 +53,7 @@ class GCNv2(nn.Module):
         h = g.ndata["feat"]
         hidden_rep = [h]
         for i, layer in enumerate(self.gcnv2layers):
-            h = layer(g, h, h)
+            h = layer(g, h, g.ndata["feat"])
             h = self.batch_norms[i](h)
             h = F.relu(h)
             hidden_rep.append(h)
