@@ -54,9 +54,8 @@ class SAGNetworkHierarchical(torch.nn.Module):
             )
         self.convpools = torch.nn.ModuleList(convpools)
 
-        self.lin1 = torch.nn.Linear(hidden_dim * 2, hidden_dim)
-        self.lin2 = torch.nn.Linear(hidden_dim, hidden_dim)
-        self.lin3 = torch.nn.Linear(hidden_dim, out_dim)
+        self.mlp = MLP(hidden_dim * 2, hidden_dim, out_dim)
+        
 
     def forward(self, graph: dgl.DGLGraph, args):
         feat = graph.ndata["feat"]
@@ -74,9 +73,8 @@ class SAGNetworkHierarchical(torch.nn.Module):
             else:
                 final_readout = final_readout + readout
 
-        feat = F.relu(self.lin1(final_readout))
-        feat = F.dropout(feat, p=self.dropout, training=self.training)
-        feat = F.relu(self.lin2(feat))
+        
+        feat = self.mlp(final_readout)
 
         return getattr(F, self.output_activation)(self.lin3(feat), dim=-1), feat
 
@@ -122,9 +120,8 @@ class SAGNetworkGlobal(torch.nn.Module):
         self.avg_readout = AvgPooling()
         self.max_readout = MaxPooling()
 
-        self.lin1 = torch.nn.Linear(concat_dim * 2, hidden_dim)
-        self.lin2 = torch.nn.Linear(hidden_dim, hidden_dim)
-        self.lin3 = torch.nn.Linear(hidden_dim, out_dim)
+        
+        self.mlp = MLP(concat_dim * 2, hidden_dim, out_dim)
 
     def forward(self, graph: dgl.DGLGraph, args):
         feat = graph.ndata["feat"]
@@ -143,9 +140,7 @@ class SAGNetworkGlobal(torch.nn.Module):
             dim=-1,
         )
 
-        feat = F.relu(self.lin1(feat))
-        feat = F.dropout(feat, p=self.dropout, training=self.training)
-        feat = F.relu(self.lin2(feat))
+        feat = self.mlp(feat)
 
         return getattr(F, self.output_activation)(self.lin3(feat), dim=-1), feat
 
@@ -217,12 +212,9 @@ class GAT(torch.nn.Module):
             self.linear_prediction.append(torch.nn.Sequential(torch.nn.Linear(_i_dim, _o_dim),
                                         torch.nn.ReLU(),
                                         torch.nn.BatchNorm1d(_o_dim)))
-        self.before_last_linear = torch.nn.Sequential(torch.nn.Linear(hidden_dim*num_layers, hidden_dim),
-                                        torch.nn.ReLU(),
-                                        torch.nn.BatchNorm1d(hidden_dim))
-        self.last_linear = torch.nn.Sequential(torch.nn.Linear(hidden_dim, out_dim),
-                                        torch.nn.ReLU(),
-                                        torch.nn.BatchNorm1d(out_dim))
+        
+        
+        self.mlp = MLP(hidden_dim*num_layers, hidden_dim, out_dim)
         # Create sum pooling module
 
         self.pool = SumPooling()
@@ -257,10 +249,9 @@ class GAT(torch.nn.Module):
         #        hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=feat.cpu().numpy())
 
         pooled_h = torch.cat(pooled_h_list, dim=-1)
-        pooled_hh = self.before_last_linear(pooled_h)
-        pooled_h = self.last_linear(pooled_hh)
+        pooled_h = self.mlp(pooled_h)
 
-        return getattr(F, self.output_activation)(pooled_h, dim=-1), pooled_hh
+        return getattr(F, self.output_activation)(pooled_h, dim=-1), pooled_h
 
 class MLP(nn.Module):
     """Construct two-layer MLP-type aggreator for GIN model"""
@@ -307,10 +298,11 @@ class GIN(nn.Module):
         self.linear_prediction = nn.ModuleList()
         for layer in range(num_layers + 1):
             if layer == 0:
-                self.linear_prediction.append(nn.Linear(in_dim, out_dim))
+                self.linear_prediction.append(nn.Linear(in_dim, hidden_dim))
             else:
-                self.linear_prediction.append(nn.Linear(hidden_dim, out_dim))
+                self.linear_prediction.append(nn.Linear(hidden_dim, hidden_dim))
         self.drop = nn.Dropout(dropout)
+        self.mlp = MLP(hidden_dim, hidden_dim, out_dim)
         self.pool = (
             SumPooling()
         )  # change to mean readout (AvgPooling) on social network datasets
@@ -338,6 +330,7 @@ class GIN(nn.Module):
             pooled_h_list.append(pooled_h)
             score_over_layer += self.drop(self.linear_prediction[i](pooled_h))
 
+        score_over_layer = self.mlp(score_over_layer)
         return  getattr(F, self.output_activation)(score_over_layer, dim=-1), torch.mean(torch.stack(pooled_h_list[1:]), dim=0)
 
 
