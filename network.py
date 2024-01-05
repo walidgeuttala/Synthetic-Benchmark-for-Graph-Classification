@@ -76,7 +76,7 @@ class SAGNetworkHierarchical(torch.nn.Module):
         
         feat = self.mlp(final_readout)
 
-        return getattr(F, self.output_activation)(self.lin3(feat), dim=-1), feat
+        return getattr(F, self.output_activation)(feat, dim=-1), feat
 
 # hidden_dim is the feat output
 class SAGNetworkGlobal(torch.nn.Module):
@@ -142,7 +142,7 @@ class SAGNetworkGlobal(torch.nn.Module):
 
         feat = self.mlp(feat)
 
-        return getattr(F, self.output_activation)(self.lin3(feat), dim=-1), feat
+        return getattr(F, self.output_activation)(feat, dim=-1), feat
 
 #hideen_feat is the output dim
 class GAT(torch.nn.Module):
