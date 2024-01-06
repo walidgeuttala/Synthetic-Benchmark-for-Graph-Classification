@@ -48,8 +48,6 @@ def func(df):
         else:
             archd = 'Hierarchical'
         for i, feat in enumerate(unique_feat_types):
-            label = f'{archd} {feat}'
-
             # Use a different color for each feat_type
             color = palette[i]
             if isinstance(line_styles[i], tuple):
@@ -76,7 +74,7 @@ def func(df):
         filename = f'{arch}_plot.pdf'
         plt.savefig(filename, format='pdf', bbox_inches='tight')
         plt.show()
-        
+
 func(df)
 print(merged_df)
 merged_df.to_csv('all_outputs.csv', index=False)
