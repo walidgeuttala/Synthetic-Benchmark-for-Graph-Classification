@@ -105,18 +105,15 @@ class GraphDataset(DGLDataset):
         return os.path.exists(graph_path) and os.path.exists(info_path)
 
     def add_ones_feat(self, k):
-        #k = 1
         self.dim_nfeats = k
         for g in self.graphs:
             g.ndata['feat'] = torch.ones(g.num_nodes(), k).float().to(self.device)
     def add_noise_feat(self, k):
-        k = 1
         self.dim_nfeats = k
         for g in self.graphs: 
             g.ndata['feat'] = torch.rand(g.num_nodes(), k).float().to(self.device)
     
     def add_degree_feat(self, k):
-        k = 1
         self.dim_nfeats = k
         for g in self.graphs:
             degrees = g.in_degrees().unsqueeze(1).float().to(self.device)
@@ -128,19 +125,10 @@ class GraphDataset(DGLDataset):
         for g in self.graphs:
             g.ndata['feat'] = compute_identity(torch.stack(g.edges(), dim=0), g.number_of_nodes(), k).float().to(self.device)
 
-    def find_largest_degree_group_of_graphs(self):
-        ans = 0
-        for g in self.graphs:
-            degrees = g.in_degrees().unsqueeze(1).float().to(self.device)
-            ans = max(ans, torch.max(degrees))
-        return ans
-
     def add_normlized_degree_feat(self, k):
-        k = 1
         self.dim_nfeats = k
-        largest_degree = self.find_largest_degree_group_of_graphs()
         for g in self.graphs:
             degrees = g.in_degrees().unsqueeze(1).float().to(self.device)
-            repeated_degrees = degrees.repeat(1, k) / largest_degree # Repeat degree 'k' times
+            repeated_degrees = degrees.repeat(1, k) / (g.number_of_nodes() - 1) # Repeat degree 'k' times
             g.ndata['feat'] = repeated_degrees
     

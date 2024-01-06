@@ -73,7 +73,6 @@ def make_graph_bidirectional(graph):
     return dgl.graph((new_src, new_dst))
 
 def read_graph2(name):
-    #name.insert(0, 'data')
     obj = dgl.data
     for method_name in name:
         obj = getattr(obj, method_name)
@@ -81,12 +80,9 @@ def read_graph2(name):
     if isinstance(graph, list):
         print(len(graph))
     graph = graph[0]
-    # Convert to NetworkX graph
-    #graph = dgl.to_homogeneous(graph)
+
     
     graph = dgl.to_homogeneous(graph)
-    #graph = make_graph_bidirectional(graph)
-    #nx_graph = graph.to_networkx().to_undirected()
    
     return graph
 
@@ -228,8 +224,6 @@ def download_Stanford_network(url, save_as = "txt.txt"):
     with gzip.open(input_file, 'rb') as f_in:
         with open(save_as, 'wb') as f_out:
             f_out.write(f_in.read())
-    
-    #os.remove(input_file)
     
     data = np.loadtxt(save_as, dtype=int)
 
@@ -435,10 +429,6 @@ def read_graph_gml_dataset(file_path):
     for node in graph.nodes():
         graph.nodes[node].clear()
 
-    # Remove all edge attributes
-    #for edge in graph.edges():
-    #   graph.edges[edge].clear()
-
     return graph, name
 
 def read_graph_pajek_datast(file_path):
@@ -456,8 +446,6 @@ def read_graph_pajek_datast(file_path):
             line = line.lower()
 
             if reading_edges:
-                # Read edges in the format "x y"
-                #x, y = map(int, line.split())
                 numbers = extract_numbers_from_string(line)
                 edges.append((numbers[0]-1, numbers[1]-1))
             elif reading_arclist:
@@ -580,7 +568,7 @@ if __name__ == "__main__":
     if args2.dist_draw == True:
         result = download_and_extract(linkss)
         stanford_degree_dist_plots(result)
-        #graph_statistics(result, True)
+        graph_statistics(result, True)
     else:
         with open(args2.args_file, 'r') as f:
             args = json.load(f)
@@ -596,7 +584,6 @@ if __name__ == "__main__":
             dropout=args['dropout'],
         ).to(args['device'])
         model.load_state_dict(torch.load(args2.model_weights_path))
-        #args['feat_type'] = args2.feat_type
         result = download_and_extract(linkss)
         test_networks(model, args, param, result)
         

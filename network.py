@@ -15,6 +15,23 @@ import numpy as np
 from dgl.nn.pytorch.glob import GlobalAttentionPooling
 import h5py
 
+
+class MLP(nn.Module):
+    """Construct two-layer MLP-type aggreator for GIN model"""
+
+    def __init__(self, input_dim, hidden_dim, output_dim):
+        super().__init__()
+        self.linears = nn.ModuleList()
+        # two-layer MLP
+        self.linears.append(nn.Linear(input_dim, hidden_dim, bias=False))
+        self.linears.append(nn.Linear(hidden_dim, output_dim, bias=False))
+        self.batch_norm = nn.BatchNorm1d((hidden_dim))
+
+    def forward(self, x):
+        h = x
+        h = F.relu(self.batch_norm(self.linears[0](h)))
+        return self.linears[1](h)
+    
 class SAGNetworkHierarchical(torch.nn.Module):
     """The Self-Attention Graph Pooling Network with hierarchical readout in paper
     `Self Attention Graph Pooling <https://arxiv.org/pdf/1904.08082.pdf>`
@@ -130,9 +147,7 @@ class SAGNetworkGlobal(torch.nn.Module):
         for i in range(self.num_layers):
             feat = self.convs[i](graph, feat)
             conv_res.append(feat)
-        #if args.activate == True:
-        #    with h5py.File("{}/save_hidden_node_feat_test_trial{}.h5".format(args.output_path, args.current_trial), 'a') as hf:
-        #        hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=conv_res[-1].cpu().numpy())
+
         conv_res = torch.cat(conv_res, dim=-1)
         graph, feat, _ = self.pool(graph, conv_res)
         feat = torch.cat(
@@ -143,8 +158,6 @@ class SAGNetworkGlobal(torch.nn.Module):
         feat = self.mlp(feat)
 
         return getattr(F, self.output_activation)(feat, dim=-1), feat
-
-#hideen_feat is the output dim
 class GAT(torch.nn.Module):
     """
     A graph neural network (GAT) that performs graph sum pooling over all nodes in each layer and makes a prediction
@@ -242,33 +255,10 @@ class GAT(torch.nn.Module):
             pooled_h = self.pool(graph, feat)
             pooled_h_list.append(self.linear_prediction[i](pooled_h))
 
-           # hidden_rep.append(feat)
-
-        # if args.activate == True:
-        #    with h5py.File("{}/save_hidden_node_feat_test_trial{}.h5".format(args.output_path, args.current_trial), 'a') as hf:
-        #        hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=feat.cpu().numpy())
-
         pooled_h = torch.cat(pooled_h_list, dim=-1)
         pooled_h = self.mlp(pooled_h)
 
         return getattr(F, self.output_activation)(pooled_h, dim=-1), pooled_h
-
-class MLP(nn.Module):
-    """Construct two-layer MLP-type aggreator for GIN model"""
-
-    def __init__(self, input_dim, hidden_dim, output_dim):
-        super().__init__()
-        self.linears = nn.ModuleList()
-        # two-layer MLP
-        self.linears.append(nn.Linear(input_dim, hidden_dim, bias=False))
-        self.linears.append(nn.Linear(hidden_dim, output_dim, bias=False))
-        self.batch_norm = nn.BatchNorm1d((hidden_dim))
-
-    def forward(self, x):
-        h = x
-        h = F.relu(self.batch_norm(self.linears[0](h)))
-        return self.linears[1](h)
-
 
 class GIN(nn.Module):
     def __init__(self, in_dim,
@@ -284,7 +274,7 @@ class GIN(nn.Module):
         self.batch_norms = nn.ModuleList()
         self.output_activation = output_activation
 
-        # five-layer GCN with two-layer MLP aggregator and sum-neighbor-pooling scheme
+        # GCN with two-layer MLP aggregator and sum-neighbor-pooling scheme
         for layer in range(num_layers):  # excluding the input layer
             if layer == 0:
                 mlp = MLP(in_dim, hidden_dim, hidden_dim)
@@ -317,11 +307,6 @@ class GIN(nn.Module):
             h = F.relu(h)
             hidden_rep.append(h)
         score_over_layer = 0
-
-        #if args.activate == True:
-        #    with h5py.File("{}/save_hidden_node_feat_test_trial{}.h5".format(args.output_path, args.current_trial), 'a') as hf:
-        #        hf.create_dataset('epoch_{}_batch{}'.format(args.current_epoch, args.current_batch), data=hidden_rep[-1].cpu().numpy())
-
 
         # perform graph sum pooling over all nodes in each layer
         pooled_h_list = []

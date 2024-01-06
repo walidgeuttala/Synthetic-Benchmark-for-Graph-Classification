@@ -10,11 +10,12 @@ import random
 from utils import *
 import dgl
 
+# control the degree of the genereated dataset
+degree_fixed = 4
+
 # Generates the parameters for the data generating function
 # The seed value is incremented each time so that we can get the same dataset next time we only set the seed parameter
 # and other seeds will be seed+=1
-degree_fixed = 4
-
 def generate_parameters(data_dist = [250] * 5, networks="all", even = False, seed=42):
   # Dictionary to save the parameters generated for our data generating function
   param = dict()
@@ -32,16 +33,12 @@ def generate_parameters(data_dist = [250] * 5, networks="all", even = False, see
   min_k = 4
   max_k = 4
   # The probability of rewiring each edge
-  #min_w = 0.08
-  #max_w = 0.09
-  #min_w = 0.13
-  #max_w = 0.16
   min_w = 0.1
   max_w = 0.11
   # Graph BA parameters
   # Number of edges to attach from a new node to existing nodes
   min_m = 4
-  max_m = 5 #2
+  max_m = 5
 
   # Graph HB parameters
   # degree 
@@ -51,7 +48,7 @@ def generate_parameters(data_dist = [250] * 5, networks="all", even = False, see
   # Graph ER parameters
   seed = np.int64(seed)
   np.random.seed(seed)
-  # Generates az an array of random integers between min_n and max_n with the size of data_dist[0]
+  # Generates an array of random integers between min_n and max_n with the size of data_dist[0]
   saved_seed = seed
   np.random.seed(saved_seed)
   n = np.array(np.random.randint(min_n, max_n, data_dist[idx]))
@@ -163,7 +160,7 @@ def generate_parameters(data_dist = [250] * 5, networks="all", even = False, see
 
 def generate_data(param, data_dist, networks="all"):
     '''
-    generate_data: This function generates data for 4 types of graphs given the parameters
+    generate_data: This function generates data for 8 types of graphs given the parameters
 
     Parameters:
         - param: Dictionary that contains the parameters for each type of graph
@@ -171,7 +168,7 @@ def generate_data(param, data_dist, networks="all"):
         - networks: all, or choose the networks you want
     Returns:
         - graphs: List of generated graphs
-        - classes: List of 0s, 1s, 2s, and 3s indicating the class of each graph
+        - classes: List of 0s, 1s, 2s, and so on indicating the class of each graph
     '''
     graphs = []
     idx = 0
@@ -222,42 +219,11 @@ def generate_data(param, data_dist, networks="all"):
       for i in range(data_dist[idx]):
         graphs.append(create_moore_2d_grid_graph(int(param['grid_tr_high'][i, 0]), int(param['grid_tr_high'][i, 1]), 1))
       idx += 1
-    
-    if networks == "all" or "HB" in networks:
-      for i in range(data_dist[idx]):
-        graphs.append(hyperbolic_graph(int(param['HB'][i,0]), int(param['HB'][i,1])))
-      idx += 1
-
-    if networks == "all" or "PC" in networks:
-      for i in range(data_dist[idx]):  
-        graphs.append(nx.powerlaw_cluster_graph(int(param['PC'][i,0]), int(param['PC'][i,1]), 1, seed=i))
-      idx += 1
 
     # Resetting the seed for numpy
     np.random.seed(None)
 
     return graphs, torch.LongTensor([i for i, x in enumerate(data_dist) for _ in range(x)])
-
-
-def find_random_close_a_b(n):
-  combination = list()
-  for a in range(2, n+1):
-      if n%a == 0:
-         b = n/a
-         for x in range(a-10, a+11):
-            combination.append((x, b))
-
-  random_index = random.randint(0, len(combination) - 1)
-  random_number = random.randint(0, 1)
-  a, b = combination[random_index]
-  if random_number == 1:
-     a, b = b, a
-  return np.array([a, b])
-
-def hyperbolic_graph(N,deg,gamma = 3.5):
-  G_Nk = nk.generators.HyperbolicGenerator(n = N,k = deg,gamma = 3.5).generate()
-  G = convertNkToNx(G_Nk)
-  return G
 
 def generate_combinations(choices):
     for combo in itertools.product(*[range(choice) for choice in choices]):
@@ -388,20 +354,5 @@ def add_summary(df):
   subprocess.run(command, shell=True)
   with open('data/README.md', 'w') as f:
     f.write('In the data folder, you will find several components that contain information about the dataset. These components are described below:\n\n1. dgl_graph.bin and info.pkl: These are the two main files that contain the structure of the graphs and additional information about the dataset. The dgl_graph.bin file contains the graph structure, and the info.pkl file contains the number of features and the number of classes for the data. To load these files, you can use the `load()` method from the GraphDataset class in the DGL library.\n\n2. info_about_graphs.csv and summary.txt: These files contain additional information about the graphs in the dataset, including the number of nodes, edges, degree, and density. Note that our graphs are undirected.\n\n3. Box plots: Lastly, you will find three box plots that provide a visual representation of the dataset. These plots can help you to better understand the distribution of the data and identify any potential outliers.\n\n4. parameters_generated_data.pth: This file contains a dictionary of parameters used to generate the data. You can load it using the torch.load() method.\n\nTo use this dataset, you can load the dgl_graph.bin and info.pkl files using the GraphDataset class in the DGL library. You can also refer to the info_about_graphs.csv and summary.txt files to get additional information about the graphs. Finally, you may find it helpful to review the box plots to gain a better understanding of the data distribution.')
-
-    
-def get_nk_lcc_undirected(G):
-    G2 = max(nx.connected_component_subgraphs(G), key=len)
-    tdl_nodes = G2.nodes()
-    nodeListMap = dict(zip(tdl_nodes, range(len(tdl_nodes))))
-    G2 = nx.relabel_nodes(G2, nodeListMap, copy=True)
-    return G2, nodeListMap
-
-
-def convertNkToNx(G_nk):
-    G_nx = nx.Graph()
-    for i, j in G_nk.iterEdges():
-        G_nx.add_edge(i,j)
-    return G_nx
     
 

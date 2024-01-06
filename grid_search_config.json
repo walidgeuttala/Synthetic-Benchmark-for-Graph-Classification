@@ -1,9 +1,8 @@
 {
-    "dataset": "dataset_ws_k_2",
-    "arch": ["hierarchical"],
-    "hidden": [64, 128],
+    "architecture": ["hierarchical"],
+    "hidden_dim": [64, 128],
     "pool_ratio": [0.25, 0.5],
     "lr": [1e-2, 5e-2],
-    "conv_layers":[3, 4],
+    "num_layers":[3, 4],
     "weight_decay": [1e-3]
 }

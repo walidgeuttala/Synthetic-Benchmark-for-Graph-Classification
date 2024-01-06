@@ -100,10 +100,6 @@ def train(model: torch.nn.Module, optimizer, trainloader, device, args, trial, e
         optimizer.step()
         total_loss += loss.item()
 
-    if args.save_hidden_output_train == True and (args.save_last_epoch_hidden_output == False or e == args.epochs-1):
-        with h5py.File("{}/save_hidden_output_train_trial{}.h5".format(args.output_path, trial), 'a') as hf:
-            hf.create_dataset('epoch_{}'.format(e), data=np.concatenate(list_hidden_output))
-
     return total_loss / num_batches
 
 
@@ -133,10 +129,7 @@ def test(model: torch.nn.Module, loader, device, args, trial, e, if_test):
         loss += F.nll_loss(out, batch_labels, reduction="sum").item()
         correct += pred.eq(batch_labels).sum().item()
         args.current_batch += 1
-    if args.save_hidden_output_test == True and if_test and (args.save_last_epoch_hidden_output == False or e == args.epochs-1):
-        with h5py.File("{}/save_hidden_output_test_trial{}.h5".format(args.output_path, trial), 'a') as hf:
-            hf.create_dataset('epoch_{}'.format(e), data=np.concatenate(list_hidden_output))
-    
+   
     return correct / num_graphs, loss / num_graphs
 
 
@@ -146,20 +139,15 @@ def main(args, seed, save=True):
     dataset = GraphDataset(device=args.device)
     dataset.load(args.dataset_path)
     if args.feat_type == 'ones_feat':
-        dataset.add_ones_feat(args.k)
+        dataset.add_ones_feat(1)
     elif args.feat_type == 'noise_feat':
-        dataset.add_noise_feat(args.k)
+        dataset.add_noise_feat(1)
     elif args.feat_type == "identity_feat":
         dataset.add_identity_feat(args.k)
     elif args.feat_type == 'degree_feat':
-        dataset.add_degree_feat(args.k)
+        dataset.add_degree_feat(1)
     else:
-        dataset.add_normlized_degree_feat(args.k)
-
-    # add self loop. We add self loop for each graph here since the function "add_self_loop" does not
-    # support batch graph.
-    # for i in range(len(dataset)):
-    #    dataset.graphs[i] = dgl.add_self_loop(dataset.graphs[i])
+        dataset.add_normlized_degree_feat(1)
 
     num_training = int(len(dataset) * 0.8)
     num_val = int(len(dataset) * 0.1)
@@ -171,8 +159,6 @@ def main(args, seed, save=True):
     # save test indices
     indices = torch.tensor(test_set.indices)
     torch.save(indices, '{}/test_indices.pt'.format(args.output_path))
-
-    #train_set, val_set, test_set = dgl.data.utils.split_dataset(dataset, frac_list=[0.8, 0.1, 0.1], shuffle=True, random_state=seed)
     
     train_loader = GraphDataLoader(
         train_set, batch_size=args.batch_size, 

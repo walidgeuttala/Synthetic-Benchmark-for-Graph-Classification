@@ -19,25 +19,6 @@ from itertools import combinations
 import seaborn as sns
 import json
 
-output_combinations = {
-    1: ("identity feat", "gat"),
-    2: ("identity feat", "hierarchical"),
-    3: ("identity feat", "gin"),
-    4: ("identity feat", "global"),
-    5: ("degree feat", "gat"),
-    6: ("degree feat", "hierarchical"),
-    7: ("degree feat", "gin"),
-    8: ("degree feat", "global"),
-    9: ("noise feat", "gat"),
-    10: ("noise feat", "hierarchical"),
-    11: ("noise feat", "gin"),
-    12: ("noise feat", "global"),
-    13: ("ones feat", "gat"),
-    14: ("ones feat", "hierarchical"),
-    15: ("ones feat", "gin"),
-    16: ("ones feat", "global")
-}
-
 def get_stats(
     array, conf_interval=False, name=None, stdout=False, logout=False
 ):
@@ -156,7 +137,6 @@ def get_batch_id(num_nodes: torch.Tensor):
         batch_ids.append(item)
     return torch.cat(batch_ids)
 
-
 def topk(
     x: torch.Tensor,
     ratio: float,
@@ -222,13 +202,11 @@ def find(str2):
 
 def calculate_avg_shortest_path(graph):
     matrix = dgl.shortest_dist(graph)
-    #matrix[matrix == -1] = 0
     # Get the dimensions of the matrix
     rows, cols = matrix.size()
     # Create a mask for the upper half (above the diagonal)
     mask = torch.triu(torch.ones(rows, cols, dtype=torch.uint8), diagonal=1)
     # Calculate the sum of elements in the upper half
-    #mask[matrix == 0] = 0
     sum_upper_half = torch.sum(matrix * mask)
     # Calculate the number of elements in the upper half
     count = torch.sum(mask)
@@ -248,7 +226,6 @@ def generate_factors(n, min, max):
         if n % i == 0 and n/i > 3:
             factors.append(i)
             
-    
     # Randomly choose one of the factors as 'a'
     if len(factors) < 2:
       x = np.random.randint(min, max + 1)
@@ -415,7 +392,7 @@ def comparing_hidden_feat(data_path, output_path, number_samples_for_type_graph,
         scatter_plot_classes_given_feat(data, array, classes, output_path, title="{} Scatter Plot ({}, {}) where circle is hidden_feat and triangle is the properties"
         .format(names_methods[method_num], df.iloc[:, i[0]].name, df.iloc[:, i[1]].name), name_feat1=df.iloc[:, i[0]].name, name_feat2=df.iloc[:, i[1]].name)
 
-def comparing_hidden_feat2(data_path, output_path, number_samples_for_type_graph, method_num, idx):
+def comparing_hidden_feat2(data_path, output_path, number_samples_for_type_graph, method_num, idx, output_combinations):
     names_methods = ['PCA', 'Kernel_PCA', 'T-SNE']
     data = dim_reduction(read_hidden_feat(output_path), method_num, 2)
     data = min_max_norm(data)
@@ -572,7 +549,6 @@ def merge_stanfrod_prediction_and_properties():
         if df[col].dtype == 'float64':
             df[col] = df[col].round(2)
 
-
     # Merge the DataFrames based on the specified columns
     result = pd.merge(df1, df, left_on='network_name', right_on='Name', how='inner')
     result.to_csv('stanfrod_prediction_with_properites.csv', index=False)
@@ -665,77 +641,6 @@ def test2(model: torch.nn.Module, loader, device, args, trial, e, if_test):
         list_hidden_output.clear()
 
     return correct / num_graphs, loss / num_graphs
-
-
-
-def independent_test2():
-    combination_dicts = []
-    number_folders = len(combination_dicts)+1
-
-
-    results = []
-    selected_keys = ["architecture", "feat_type", "hidden_dim", "num_layers", "test_loss", "test_loss_error", "test_acc", "test_acc_error"]
-    for i in range(1, number_folders):
-        #read the model
-        output_path = "output{}/".format(i)
-        files_names = os.listdir(output_path)
-        models_path = [file for file in files_names if  "last_model_weights_trail" in file]
-        args_file_name = [file for file in files_names if "Data_dataset_Hidden_" in file][0]
-        args_path = output_path+args_file_name
-
-
-        with open(args_path, 'r') as f:
-            args = json.load(f)
-        args = args['hyper-parameters']
-        def get_network():
-            pass
-        accuracies = []
-        dataset1 = dataset2 = dataset3 = dataset4 = None
-        test_loader1 = test_loader2 = test_loader3 = test_loader4 = None
-        losses = []
-        device = None
-        for num_trial, model_path in enumerate(models_path):
-            model_op = get_network(args['architecture'])
-            if args['feat_type'] == 'ones_feat':
-                dataset = dataset1
-                test_loader = test_loader1
-            elif args['feat_type'] == 'degree_feat':
-                dataset = dataset2
-                test_loader = test_loader2
-            elif args['feat_type'] == 'noise_feat':
-                dataset = dataset3
-                test_loader = test_loader3
-            else:
-                dataset = dataset4
-                test_loader = test_loader4
-
-            num_feature, num_classes, _ = dataset.statistics()
-
-            model = model_op(
-                    in_dim=num_feature,
-                    hidden_dim=args['hidden_dim'],
-                    out_dim=num_classes,
-                    num_layers=args['num_layers'],
-                    pool_ratio=args['pool_ratio'],
-                    dropout=args['dropout'],
-                    output_activation = args['output_activation']
-            ).to(device)
-            model.load_state_dict(torch.load(output_path+model_path))
-            model.eval()
-            accuracy, loss = test2(model, test_loader, device, args, num_trial, 1, False)
-            accuracies.append(accuracy)
-            losses.append(loss)
-
-        accuracies = np.array(accuracies)
-        losses = np.array(losses)
-
-        result = [args["architecture"], args["feat_type"], args["hidden_dim"], args["num_layers"], losses.mean(), losses.var(), accuracies.mean(), accuracies.var()]
-        result = dict(zip(selected_keys, result))
-        results.append(result)
-
-    test_results = pd.DataFrame(results)
-    test_results.to_csv('test_resutls_large_networks.csv')
-
 
 
 def draw_figures_scatters(df):

@@ -6,19 +6,9 @@ from main import main, parse_args
 from utils import get_stats
 from utils import *
 
-# {
-#     "arch": ["hierarchical", "global"],
-#     "hidden": [16, 32, 64, 128],
-#     "pool_ratio": [0.25, 0.5],
-#     "lr": [1e-2, 5e-2, 1e-3, 5e-3, 1e-4, 5e-4],
-#     "weight_decay": [1e-2, 1e-3, 1e-4, 1e-5],
-#     "dataset": ["dataset1"]
-# }
-
 def load_config(path="./grid_search_config.json"):
     with open(path, "r") as f:
         return json.load(f)
-
 
 def run_experiments(args):
     res = []
