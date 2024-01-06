@@ -1,4 +1,10 @@
 import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+
+
 var = ''
 df1 = pd.read_csv(var+'test_resutls_small_networks.csv', index_col=False)
 df2 = pd.read_csv(var+'test_resutls_large_networks.csv', index_col=False)
@@ -11,12 +17,6 @@ merged_df = merged_df[merged_df['num_layers'] == 4]
 merged_df = merged_df.rename(columns={'test_acc_x': 'test_acc', 'test_acc_y': 'second_test_acc'})
 
 df = pd.read_csv('dafa.csv', index_col=False)
-
-
-import seaborn as sns
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
 
 def func(df):
     # Assuming your DataFrame is named 'df'
@@ -53,15 +53,15 @@ def func(df):
             # Use a different color for each feat_type
             color = palette[i]
             if isinstance(line_styles[i], tuple):
-                # label=f'{unique_feat_types2[i]} (small graphs)'
-                sns.lineplot( x='hidden_dim', y='test_acc', data=filtered_data[filtered_data['feat_type'] == feat], marker=markers[i], linewidth=2.0, color='black', markersize=20, dashes=line_styles[i])
-                # label=f'{unique_feat_types2[i]} (medium graphs)'
-                sns.lineplot( x='hidden_dim', y='second_test_acc', data=filtered_data[filtered_data['feat_type'] == feat], marker=markers[i], linewidth=2.0, color='gray', markersize=20, dashes=line_styles[i])
+                # 
+                sns.lineplot( x='hidden_dim', y='test_acc', label=f'{unique_feat_types2[i]} (Small Dataset)', data=filtered_data[filtered_data['feat_type'] == feat], marker=markers[i], linewidth=2.0, color='black', markersize=20, dashes=line_styles[i])
+                # 
+                sns.lineplot( x='hidden_dim', y='second_test_acc', label=f'{unique_feat_types2[i]} (Medium Dataset)', data=filtered_data[filtered_data['feat_type'] == feat], marker=markers[i], linewidth=2.0, color='gray', markersize=20, dashes=line_styles[i])
             else:
-                # label=f'{unique_feat_types2[i]} (small graphs)'
-                sns.lineplot(x='hidden_dim', y='test_acc', data=filtered_data[filtered_data['feat_type'] == feat], marker=markers[i], linewidth=2.0, color='black', markersize=20, linestyle=line_styles[i])
-                # label=f'{unique_feat_types2[i]} (medium graphs)'
-                sns.lineplot(x='hidden_dim', y='second_test_acc', data=filtered_data[filtered_data['feat_type'] == feat], marker=markers[i], linewidth=2.0, color='gray', markersize=20, linestyle=line_styles[i])
+                # 
+                sns.lineplot(x='hidden_dim', y='test_acc', label=f'{unique_feat_types2[i]} (Small Dataset)', data=filtered_data[filtered_data['feat_type'] == feat], marker=markers[i], linewidth=2.0, color='black', markersize=20, linestyle=line_styles[i])
+                # 
+                sns.lineplot(x='hidden_dim', y='second_test_acc', label=f'{unique_feat_types2[i]} (medium Dataset)', data=filtered_data[filtered_data['feat_type'] == feat], marker=markers[i], linewidth=2.0, color='gray', markersize=20, linestyle=line_styles[i])
 
 
         plt.xscale('log', base=2)  # Set x-axis to logarithmic scale with base 2
@@ -76,7 +76,7 @@ def func(df):
         plt.ylabel('Accuracy', fontsize=24)
         plt.yticks([i/10 for i in range(11)], fontsize=20)
         plt.title(f'Architecture: {archd}', fontsize=24)
-        #plt.legend(title='Legend', prop={'size': 18})
+        plt.legend(title='Legend', prop={'size': 18})
         filename = f'{arch}_plot.pdf'
         plt.savefig(filename, format='pdf', bbox_inches='tight')
         plt.show()
