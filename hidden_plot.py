@@ -76,6 +76,7 @@ def func(df):
         filename = f'{arch}_plot.pdf'
         plt.savefig(filename, format='pdf', bbox_inches='tight')
         plt.show()
+        
 func(df)
 print(merged_df)
 merged_df.to_csv('all_outputs.csv', index=False)
