@@ -53,14 +53,10 @@ def func(df):
             # Use a different color for each feat_type
             color = palette[i]
             if isinstance(line_styles[i], tuple):
-                # 
                 sns.lineplot( x='hidden_dim', y='test_acc', label=f'{unique_feat_types2[i]} (Small Dataset)', data=filtered_data[filtered_data['feat_type'] == feat], marker=markers[i], linewidth=2.0, color='black', markersize=20, dashes=line_styles[i])
-                # 
                 sns.lineplot( x='hidden_dim', y='second_test_acc', label=f'{unique_feat_types2[i]} (Medium Dataset)', data=filtered_data[filtered_data['feat_type'] == feat], marker=markers[i], linewidth=2.0, color='gray', markersize=20, dashes=line_styles[i])
             else:
-                # 
                 sns.lineplot(x='hidden_dim', y='test_acc', label=f'{unique_feat_types2[i]} (Small Dataset)', data=filtered_data[filtered_data['feat_type'] == feat], marker=markers[i], linewidth=2.0, color='black', markersize=20, linestyle=line_styles[i])
-                # 
                 sns.lineplot(x='hidden_dim', y='second_test_acc', label=f'{unique_feat_types2[i]} (medium Dataset)', data=filtered_data[filtered_data['feat_type'] == feat], marker=markers[i], linewidth=2.0, color='gray', markersize=20, linestyle=line_styles[i])
 
 
