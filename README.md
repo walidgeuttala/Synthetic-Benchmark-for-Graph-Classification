@@ -56,27 +56,155 @@ This table helps understand the different network types generated and their key 
 - **Kaggle Link**: [Link to the dataset](https://www.kaggle.com/datasets/geuttalawalid/synthetic-benchmark-for-graph-classification/data)
 
 ## Data Generation Code
-- **File**: `data_generation_code.py`
-- **Description**: Explain the code used to generate the dataset. Include necessary instructions or dependencies needed to run this code.
+
+- **File**: `create_dataset.py`
+- **Description**: This Python script (`create_dataset.py`) contains functions to generate synthetic datasets for the study. The code utilizes various libraries such as NetworkX, NumPy, Torch, Pandas, DGL (Deep Graph Library), and others to create synthetic graphs with specific characteristics.
+
+The script includes functions like `generate_parameters`, `generate_data`, `create_moore_2d_grid_graph`, and `create_manhattan_2d_grid_graph`, which collectively generate different types of graphs (Erdős-Rényi, Watts-Strogatz, Barabási-Albert, and grid-based graphs) based on specified parameters.
+
+- `generate_parameters`: Generates parameters for different graph types based on specific distributions and characteristics.
+- `generate_data`: Uses the generated parameters to create synthetic graphs for various types such as Erdős-Rényi, Watts-Strogatz, Barabási-Albert, and grid-based graphs.
+- `create_moore_2d_grid_graph` and `create_manhattan_2d_grid_graph`: Functions to create 2D grid graphs with different topologies.
+
+The script also contains functionalities to calculate graph statistics like average degree, density, transitivity, average shortest path, max degree, and degree variance for the generated graphs. These statistics are then compiled into a Pandas DataFrame (`create_DF`) and saved as CSV files and text files (`add_summary`).
+
+The generated data includes files such as `info_about_graphs.csv`, `summary.txt`, box plots, and a file (`parameters_generated_data.pth`) containing a dictionary of parameters used for data generation. Additionally, a README file (`README.md`) is created within the `data` folder, providing guidance on how to use and interpret the dataset components.
+
+To reproduce the dataset generation, one can execute this script and follow the instructions provided within the README file in the `data` folder.
+
 
 ## Model Generation Code
+
 - **File**: `model_generation_code.py`
 - **Description**: Detail the code used to generate and train the models using the dataset. Include libraries, parameters, and explanations of the model architecture or algorithms used.
 
-## Model Testing Code
-- **File**: `model_testing_code.py`
-- **Description**: Describe the code used for testing the models. Explain how the performance metrics were calculated and how the models were evaluated.
+### SAGNetworkHierarchical
+
+This class defines a Self-Attention Graph Pooling Network with hierarchical readout based on the paper [Self Attention Graph Pooling](https://arxiv.org/pdf/1904.08082.pdf). It consists of several graph convolution layers (`ConvPoolBlock`) and an MLP aggregator (`MLP`). The `forward` method performs the forward pass through these layers.
+
+### SAGNetworkGlobal
+
+Another variation of the Self-Attention Graph Pooling Network, this one utilizes global readout and graph convolution layers (`GraphConv`). It also uses pooling methods (`SAGPool`, `AvgPooling`, `MaxPooling`) and an MLP aggregator (`MLP`) for computation.
+
+### GAT
+
+This class implements a Graph Attention Network (GAT) using multi-head attention (`GATv2Conv`) and sum pooling over all nodes in each layer. It contains multiple layers and uses BatchNorm, ReLU activation, and dropout for regularization.
+
+### GIN
+
+The GIN (Graph Isomorphism Network) class implements a model with GINConv layers, batch normalization, and MLP aggregators for sum pooling.
+
+### get_network
+
+This function acts as a factory to retrieve the desired network architecture based on the specified type, including hierarchical (`SAGNetworkHierarchical`), global (`SAGNetworkGlobal`), GAT (`GAT`), or GIN (`GIN`). It raises a ValueError for unsupported network types.
 
 ## Usage Instructions
-- **Requirements**: List any specific software versions, libraries, or dependencies required to reproduce your results.
-- **Instructions**: Provide step-by-step instructions on how to generate the dataset, train the models, and test them using the provided code.
+
+### Requirements
+- **Software Versions**:
+  - `dgl` (with specific installation links for CUDA versions if applicable)
+  - `dglgo`
+  - `torch_geometric`
+  - `torch`, `torch-scatter`, `torch-sparse`
+  - `pytorch_lightning`
+  - `networkit`
+  - `networkx`
+  - `numpy`
+  - `pandas`
+  - `matplotlib`
+  - `sklearn`
+
+### Instructions
+
+1. **Environment Setup**:
+   - If using CUDA:
+     - Install `dgl` and `dglgo`:
+       ```bash
+       pip install --pre dgl -f https://data.dgl.ai/wheels/cu116/repo.html
+       pip install --pre dglgo -f https://data.dgl.ai/wheels-test/repo.html
+       ```
+   - If using CPU:
+     - Install `dgl`:
+       ```bash
+       pip install dgl
+       ```
+   - Install other dependencies:
+     ```bash
+     pip install torch_geometric torch-scatter torch-sparse pytorch_lightning networkit networkx numpy pandas matplotlib sklearn
+     ```
+
+2. **Code Usage**:
+   - Initialize the device:
+     ```python
+     device = 'cuda'  # or 'cpu'
+     ```
+   - Install necessary packages based on the selected device.
+   - Import required libraries and set the necessary environment variables:
+     ```python
+     import os
+     import torch
+
+     os.environ['TORCH'] = torch.__version__
+     # Other imports and settings
+     ```
+   - Use the provided code for graph generation, dataset creation (`GraphDataset`), and model training (`create_dataset.py`).
+
+### Example Usage
+
+To generate and train models, you can use the `main.py` script with various parameters to customize the process:
+
+- **Dataset Configuration**:
+  - `--dataset`: Name of the dataset, used for labeling information post-training.
+  - `--feat_type`: Choice of feature types (`ones_feat`, `noise_feat`, `degree_feat`, `identity_feat`, `norm_degree_feat`).
+
+- **Training Parameters**:
+  - `--batch_size`: Batch size for training.
+  - `--lr`: Learning rate for optimization.
+  - `--weight_decay`: Weight decay applied to the learning rate during epochs.
+  - `--hidden_dim`: Hidden size, determining the number of neurons in each hidden layer.
+  - `--dropout`: Dropout ratio used in the model.
+  - `--epochs`: Maximum number of training epochs.
+  - `--patience`: Patience for early stopping (`-1` for no early stopping).
+
+- **Device and Model Configuration**:
+  - `--device`: Device choice between `cuda` or `cpu`.
+  - `--architecture`: Model architecture (`gin`, `gatv2`, `gcn`, `sage`, `gcnv2`, `cheb`).
+  - `--num_layers`: Number of convolutional layers.
+
+- **Output and Saving**:
+  - `--output_path`: Path to store the model output.
+  - `--save_hidden_output_train`: Option to save output before applying activation function during training.
+  - `--save_hidden_output_test`: Option to save output before applying activation function during testing/validation.
+  - `--save_last_epoch_hidden_output`: Save last epoch hidden output only (applies to both train and test if set to `True`).
+  - `--save_last_epoch_hidden_features_for_nodes`: Save last epoch hidden features of nodes (applies to both train and test if set to `True`).
+
+- **Additional Configurations**:
+  - `--k`: Depth control for generating ID features (for ID-GNN).
+  - `--output_activation`: Output activation function.
+  - `--optimizer_name`: Optimizer type (default is `Adam`).
+  - `--loss_name`: Loss function correlated to the optimization function.
+
+- **Tracking Progress**:
+  - `--print_every`: Log training details every `k` epochs (`-1` for silent training).
+
+- **Miscellaneous Parameters**:
+  - `--num_trials`: Number of trials.
+  - `--current_epoch`: The current epoch.
+  - `--current_trial`: The current trial.
+  - `--activate`: Activate saving the learned node features in the test dataset.
+  - `--current_batch`: The current batch.
+
+Utilize these parameters to customize the dataset generation, model training, and testing processes according to your requirements.
+
+
+4. **Notes**:
+   - Ensure that the required datasets are available or generated as needed before training the models.
+   - Adjust hyperparameters and model architectures in the code as necessary for specific experiments or tasks.
+   - Consult the provided `utils.py` file for additional utility functions and manipulations.
 
 ## Citation
-- **Cite the Paper**: Include the citation for your paper so that others can properly reference your work.
-
-## References
-- **List of References**: Include citations for any external sources or libraries used in your code or dataset creation.
+- **Cite the Paper**:
 
 ## Contact Information
-- **Author**: Provide contact details or a way for other researchers to reach out for questions or clarifications.
+- **Author**: guettalawalid@inf.elte.hu
 
