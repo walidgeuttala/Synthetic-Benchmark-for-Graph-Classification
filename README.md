@@ -53,7 +53,7 @@ The table below summarizes the 8 network types included in the synthetic dataset
 
 This table helps understand the different network types generated and their key characteristics, aiding in the analysis and understanding of the datasets.
 
-- **Kaggle Link**: [Link to the dataset](https://www.kaggle.com/datasets/geuttalawalid/synthetic-benchmark-for-graph-classification/data)
+- **DataSet used**: The dataset is available in the 'datasets.zip' file within this repository. Alternatively, you can access it via the [Link to the dataset]([link-to-kaggle-dataset](https://www.kaggle.com/datasets/geuttalawalid/synthetic-benchmark-for-graph-classification/data)).
 
 ## Data Generation Code
 
