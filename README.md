@@ -204,6 +204,12 @@ Utilize these parameters to customize the dataset generation, model training, an
 
 ## Citation
 - **Cite the Paper**:
+- @article{guettala2024power,
+  title={On the Power of Graph Neural Networks and Feature Augmentation Strategies to Classify Social Networks},
+  author={Guettala, Walid and Guly{\'a}s, L{\'a}szl{\'o}},
+  journal={arXiv preprint arXiv:2401.06048},
+  year={2024}
+}
 
 ## Contact Information
 - **Author**: guettalawalid@inf.elte.hu
